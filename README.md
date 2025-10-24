@@ -8,10 +8,11 @@
 ### 🗑️ Professional File & Folder Deletion Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
 [![Version](https://img.shields.io/badge/Version-1.0.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
 
@@ -37,6 +38,39 @@
 - ⚡ **Fast Performance** - Built with Electron and React for optimal speed
 - 💾 **SQLite Database** - Local data storage with better-sqlite3
 
+### 🔒 Security & Safety
+
+**FnF Delete is completely safe and secure:**
+
+[![VirusTotal Scan](https://img.shields.io/badge/VirusTotal-Clean%20Scan-success?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
+
+- ✅ **Open Source** - All code is publicly available for review
+- ✅ **VirusTotal Verified** - Scanned and verified clean by 70+ antivirus engines
+- ✅ **No Telemetry** - We don't collect or send any data
+- ✅ **Local Storage** - All data stays on your computer
+- ✅ **Safe Deletion** - Files moved to trash, not permanently deleted
+- ✅ **MIT Licensed** - Free and open source software
+
+#### ⚠️ Windows SmartScreen Warning
+
+When downloading and running the application for the first time, you might see a Windows SmartScreen warning:
+
+**"Windows protected your PC"** or **"Unknown publisher"**
+
+**This is normal for new applications without expensive code signing certificates ($300+/year).**
+
+The application is **completely safe** and verified:
+- ✅ Scanned by VirusTotal: [View Full Report](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
+- ✅ Submitted to Microsoft for verification
+- ✅ Open source code available for review
+
+**How to install:**
+1. Click **"More info"**
+2. Click **"Run anyway"**
+3. The application will install normally
+
+We're working on obtaining a code signing certificate to eliminate this warning in future releases.
+
 ### 🖼️ Screenshots
 
 <div align="center">
@@ -61,8 +95,8 @@
 
 1. Download the latest release for your platform:
    - **Windows**: `FnF Delete Setup 1.0.0.exe`
-   - **macOS**: `FnF Delete-1.0.0.dmg`
-   - **Linux**: `FnF Delete-1.0.0.AppImage` or `.deb`
+   - **Linux**: `FnF-Delete-1.0.0.AppImage` (Universal) or `fnf-delete_1.0.0_amd64.deb` (Debian/Ubuntu)
+   - **macOS**: Coming soon!
 
 2. Install and run the application
 
@@ -143,6 +177,39 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ⚡ **Hızlı Performans** - Optimal hız için Electron ve React ile geliştirilmiştir
 - 💾 **SQLite Veritabanı** - better-sqlite3 ile yerel veri depolama
 
+### 🔒 Güvenlik ve Emniyet
+
+**FnF Delete tamamen güvenli ve emniyetlidir:**
+
+[![VirusTotal Tarama](https://img.shields.io/badge/VirusTotal-Temiz%20Tarama-success?logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
+
+- ✅ **Açık Kaynak** - Tüm kod inceleme için herkese açık
+- ✅ **VirusTotal Doğrulaması** - 70+ antivirüs motoru tarafından taranmış ve temiz bulunmuş
+- ✅ **Veri Toplama Yok** - Hiçbir veri toplamıyoruz veya göndermiyoruz
+- ✅ **Yerel Depolama** - Tüm verileriniz bilgisayarınızda kalır
+- ✅ **Güvenli Silme** - Dosyalar kalıcı olarak silinmez, çöp kutusuna taşınır
+- ✅ **MIT Lisanslı** - Özgür ve açık kaynak yazılım
+
+#### ⚠️ Windows SmartScreen Uyarısı
+
+Uygulamayı ilk kez indirip çalıştırdığınızda bir Windows SmartScreen uyarısı görebilirsiniz:
+
+**"Windows bilgisayarınızı korudu"** veya **"Bilinmeyen yayımcı"**
+
+**Bu, pahalı kod imzalama sertifikası olmayan yeni uygulamalar için normaldir ($300+/yıl).**
+
+Uygulama **tamamen güvenlidir** ve doğrulanmıştır:
+- ✅ VirusTotal tarafından taranmış: [Tam Raporu Görüntüle](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
+- ✅ Microsoft'a doğrulama için gönderilmiş
+- ✅ Açık kaynak kodu inceleme için hazır
+
+**Nasıl kurulur:**
+1. **"Daha fazla bilgi"** tıklayın
+2. **"Yine de çalıştır"** tıklayın
+3. Uygulama normal şekilde kurulacaktır
+
+Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifikası almak üzerinde çalışıyoruz.
+
 ### 🖼️ Ekran Görüntüleri
 
 <div align="center">
@@ -167,8 +234,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 1. Platformunuz için en son sürümü indirin:
    - **Windows**: `FnF Delete Setup 1.0.0.exe`
-   - **macOS**: `FnF Delete-1.0.0.dmg`
-   - **Linux**: `FnF Delete-1.0.0.AppImage` veya `.deb`
+   - **Linux**: `FnF-Delete-1.0.0.AppImage` (Evrensel) veya `fnf-delete_1.0.0_amd64.deb` (Debian/Ubuntu)
+   - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın
 
