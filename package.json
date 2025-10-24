@@ -20,7 +20,10 @@
     "delete",
     "statistics"
   ],
-  "author": "Brainy Tech",
+  "author": {
+    "name": "Brainy Tech",
+    "email": "dev@brainytech.net"
+  },
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^12.0.0",
@@ -40,7 +43,7 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.brainytech.fnfdelete",
+    "appId": "net.brainytech.fnfdelete",
     "productName": "FnF Delete",
     "directories": {
       "output": "release"
