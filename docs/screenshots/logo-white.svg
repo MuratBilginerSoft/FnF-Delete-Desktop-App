@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="200" cy="200" r="190" fill="white" opacity="0.05"/>
+
+  <!-- Folder outline -->
+  <path
+    d="M60 140 L60 300 C60 310 70 320 80 320 L320 320 C330 320 340 310 340 300 L340 140 C340 130 330 120 320 120 L220 120 L190 90 L80 90 C70 90 60 100 60 110 Z"
+    stroke="white"
+    stroke-width="12"
+    fill="rgba(255, 255, 255, 0.1)"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Folder tab detail -->
+  <path
+    d="M60 120 L60 140 L340 140"
+    stroke="white"
+    stroke-width="10"
+    opacity="0.6"
+  />
+
+  <!-- Trash bin in center -->
+  <g transform="translate(140, 160)">
+    <!-- Bin body -->
+    <path
+      d="M40 50 L40 200 C40 205 45 210 50 210 L90 210 C95 210 100 205 100 200 L100 50"
+      stroke="white"
+      stroke-width="12"
+      fill="rgba(255, 255, 255, 0.05)"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Bin top rim -->
+    <line
+      x1="30" y1="50" x2="110" y2="50"
+      stroke="white"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+
+    <!-- Bin lid -->
+    <path
+      d="M55 30 L60 50 L80 50 L85 30 C85 25 82 20 75 20 L65 20 C58 20 55 25 55 30"
+      stroke="white"
+      stroke-width="12"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Vertical lines in bin -->
+    <line
+      x1="60" y1="80" x2="60" y2="170"
+      stroke="white"
+      stroke-width="10"
+      stroke-linecap="round"
+      opacity="0.8"
+    />
+    <line
+      x1="80" y1="80" x2="80" y2="170"
+      stroke="white"
+      stroke-width="10"
+      stroke-linecap="round"
+      opacity="0.8"
+    />
+  </g>
+
+  <!-- Glow effect -->
+  <circle cx="200" cy="200" r="180" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
+</svg>

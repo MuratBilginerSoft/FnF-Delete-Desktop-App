@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FnF Delete</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .splash-container {
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      margin-bottom: 30px;
+    }
+
+    .logo-circle {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 25px;
+      background: linear-gradient(135deg, #00326E 0%, #004C99 50%, #0066CC 100%);
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 0 60px rgba(0, 163, 255, 0.4),
+        0 20px 40px rgba(0, 0, 0, 0.3);
+      animation: pulse 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    .logo-circle::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 32px;
+      background: linear-gradient(135deg, #00A3FF, #0066CC, #004C99);
+      filter: blur(15px);
+      opacity: 0.5;
+      z-index: -1;
+      animation: rotate 4s linear infinite;
+    }
+
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      color: white;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+    }
+
+    .app-name {
+      font-size: 56px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 12px;
+      letter-spacing: -2px;
+      text-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.6),
+        0 8px 32px rgba(0, 50, 110, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .app-tagline {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 45px;
+      font-weight: 500;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading {
+      width: 280px;
+      height: 6px;
+      background: rgba(0, 50, 110, 0.3);
+      border-radius: 10px;
+      margin: 0 auto;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00326E 0%, #004C99 50%, #0066CC 100%);
+      border-radius: 10px;
+      animation: loading 2s ease-in-out infinite;
+      box-shadow:
+        0 0 15px rgba(0, 163, 255, 0.6),
+        0 0 30px rgba(0, 102, 204, 0.4);
+    }
+
+    .version {
+      margin-top: 30px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    .brand {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .brand-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 4px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #00D9FF 0%, #00A3FF 50%, #0066CC 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 20px rgba(0, 163, 255, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 60px rgba(0, 163, 255, 0.4),
+          0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow:
+          0 0 80px rgba(0, 163, 255, 0.6),
+          0 25px 50px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    @keyframes loading {
+      0% {
+        width: 0%;
+        margin-left: 0;
+      }
+      50% {
+        width: 100%;
+        margin-left: 0;
+      }
+      100% {
+        width: 0%;
+        margin-left: 100%;
+      }
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="logo">
+      <div class="logo-circle">
+        <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Folder outline -->
+          <path
+            d="M15 35 L15 75 C15 77.5 17.5 80 20 80 L80 80 C82.5 80 85 77.5 85 75 L85 35 C85 32.5 82.5 30 80 30 L55 30 L47.5 22.5 L20 22.5 C17.5 22.5 15 25 15 27.5 Z"
+            stroke="white"
+            stroke-width="3"
+            fill="rgba(255, 255, 255, 0.1)"
+          />
+          <!-- Trash bin in center -->
+          <g transform="translate(35, 40)">
+            <path d="M10 12.5 L10 50 C10 51.25 11.25 52.5 12.5 52.5 L22.5 52.5 C23.75 52.5 25 51.25 25 50 L25 12.5"
+                  stroke="white"
+                  stroke-width="3"
+                  fill="none"
+                  stroke-linecap="round"/>
+            <line x1="7.5" y1="12.5" x2="27.5" y2="12.5"
+                  stroke="white"
+                  stroke-width="3"
+                  stroke-linecap="round"/>
+            <path d="M13.75 7.5 L15 12.5 L20 12.5 L21.25 7.5 C21.25 6.25 20.5 5 18.75 5 L16.25 5 C14.5 5 13.75 6.25 13.75 7.5"
+                  stroke="white"
+                  stroke-width="3"
+                  fill="none"/>
+            <line x1="15" y1="20" x2="15" y2="42.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="20" y1="20" x2="20" y2="42.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <h1 class="app-name">FnF Delete</h1>
+    <p class="app-tagline">File & Folder Deletion Manager</p>
+    <div class="loading">
+      <div class="loading-bar"></div>
+    </div>
+    <p class="version">v1.0.0</p>
+    <div class="brand">
+      <p class="brand-label">by</p>
+      <p class="brand-name">Brainy Tech Solutions</p>
+    </div>
+  </div>
+</body>
+</html>
