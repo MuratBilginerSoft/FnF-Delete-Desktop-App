@@ -1,0 +1,96 @@
+/* Notification Modal Styles */
+
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.notification-modal {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideIn 0.3s ease-out;
+  position: relative;
+}
+
+.notification-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.4s ease-out 0.1s both;
+}
+
+.notification-modal.success .notification-icon {
+  background: linear-gradient(135deg, rgba(0, 217, 163, 0.15) 0%, rgba(0, 217, 163, 0.08) 100%);
+  border: 2px solid rgba(0, 217, 163, 0.3);
+}
+
+.notification-modal.success .notification-icon svg {
+  color: #00D9A3;
+}
+
+.notification-modal.error .notification-icon {
+  background: linear-gradient(135deg, rgba(255, 71, 87, 0.15) 0%, rgba(255, 71, 87, 0.08) 100%);
+  border: 2px solid rgba(255, 71, 87, 0.3);
+}
+
+.notification-modal.error .notification-icon svg {
+  color: #FF4757;
+}
+
+.notification-modal h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  animation: slideInFromBottom 0.4s ease-out 0.2s both;
+}
+
+.notification-modal.success h3 {
+  color: #00D9A3;
+}
+
+.notification-modal.error h3 {
+  color: #FF4757;
+}
+
+.notification-modal p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+  line-height: 1.6;
+  animation: slideInFromBottom 0.4s ease-out 0.3s both;
+}
+
+.notification-modal .btn {
+  min-width: 140px;
+  animation: slideInFromBottom 0.4s ease-out 0.4s both;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
