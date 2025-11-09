@@ -28,18 +28,22 @@ class FileScanner {
         };
       }
 
-      // Parse extensions (convert to lowercase and remove dots)
-      const extensionList = extensions
-        .split(',')
-        .map(ext => ext.trim().toLowerCase().replace(/^\./, ''))
-        .filter(ext => ext.length > 0);
+      // For 'all' mode, we don't need extensions
+      let extensionList = [];
+      if (mode !== 'all') {
+        // Parse extensions (convert to lowercase and remove dots)
+        extensionList = extensions
+          .split(',')
+          .map(ext => ext.trim().toLowerCase().replace(/^\./, ''))
+          .filter(ext => ext.length > 0);
 
-      if (extensionList.length === 0) {
-        return {
-          success: false,
-          message: 'No valid extensions provided',
-          files: []
-        };
+        if (extensionList.length === 0) {
+          return {
+            success: false,
+            message: 'No valid extensions provided',
+            files: []
+          };
+        }
       }
 
       // Scan recursively
@@ -106,6 +110,11 @@ class FileScanner {
   }
 
   shouldIncludeFile(fileExt, extensionList, mode) {
+    if (mode === 'all') {
+      // Include all files regardless of extension
+      return true;
+    }
+
     const isInList = extensionList.includes(fileExt);
 
     if (mode === 'include') {

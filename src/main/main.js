@@ -322,6 +322,44 @@ class Main {
         return null;
       }
     });
+
+    // ============ SAVED PATHS HANDLERS ============
+
+    ipcMain.handle('savedPath:create', async (event, { profileId, path, name }) => {
+      try {
+        return this.database.createSavedPath(profileId, path, name);
+      } catch (error) {
+        console.error('Create saved path error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('savedPath:getAll', async (event, profileId) => {
+      try {
+        return this.database.getSavedPaths(profileId);
+      } catch (error) {
+        console.error('Get saved paths error:', error);
+        return [];
+      }
+    });
+
+    ipcMain.handle('savedPath:delete', async (event, id) => {
+      try {
+        return this.database.deleteSavedPath(id);
+      } catch (error) {
+        console.error('Delete saved path error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('savedPath:update', async (event, { id, name }) => {
+      try {
+        return this.database.updateSavedPath(id, name);
+      } catch (error) {
+        console.error('Update saved path error:', error);
+        return { success: false, message: error.message };
+      }
+    });
   }
 }
 

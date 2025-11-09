@@ -1,9 +1,28 @@
 /* Changelog Page Styles */
 
 .changelog {
-  padding: 32px;
+  padding: 0;
+  padding-bottom: 40px;
   height: 100%;
+  background: transparent;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+}
+
+.changelog > *:not(.app-footer) {
+  padding-left: 32px;
+  padding-right: 32px;
+  flex-shrink: 0;
+}
+
+.changelog > .changelog-header {
+  padding-top: 32px;
+}
+
+.changelog > .changelog-timeline {
+  padding-bottom: 32px;
 }
 
 /* Changelog Header */
@@ -274,8 +293,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .changelog {
-    padding: 20px;
+  .changelog > *:not(.app-footer) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .changelog > .changelog-header {
+    padding-top: 20px;
+  }
+
+  .changelog > .changelog-timeline {
+    padding-bottom: 20px;
   }
 
   .changelog-header-content {

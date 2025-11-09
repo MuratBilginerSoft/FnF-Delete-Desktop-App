@@ -210,7 +210,7 @@ export default function Dashboard({ onNavigate }) {
       </div>
 
       {/* Footer */}
-      <footer className="dashboard-footer">
+      <div className="dashboard-footer">
         <div className="footer-content">
           <div className="footer-left">
             <img
@@ -221,10 +221,10 @@ export default function Dashboard({ onNavigate }) {
             <span className="footer-copyright">© {currentYear}</span>
           </div>
           <div className="footer-right">
-            <span className="footer-version">v1.0.0</span>
+            <span className="footer-version">v1.1.0</span>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

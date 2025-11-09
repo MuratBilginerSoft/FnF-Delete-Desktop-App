@@ -53,6 +53,8 @@ const translations = {
     'delete.modeIncludeDesc': 'Belirttiğiniz uzantılara sahip dosyalar silinir. Örnek: mp3,mp4,jpg',
     'delete.modeExclude': 'Bu Uzantılar Hariç Tümünü Sil',
     'delete.modeExcludeDesc': 'Belirttiğiniz uzantılar hariç tüm dosyalar silinir. Dikkatli kullanın!',
+    'delete.modeAll': 'Tüm Dosyaları Sil',
+    'delete.modeAllDesc': 'Klasördeki tüm dosyalar uzantı farkı gözetmeksizin listeleyip silme işlemi yapmanızı sağlar.',
     'delete.mediaFiles': 'Medya',
     'delete.imageFiles': 'Resim',
     'delete.documentFiles': 'Doküman',
@@ -62,6 +64,7 @@ const translations = {
     'delete.preview': 'Önizleme',
     'delete.includeMode': 'Sadece Seçili Uzantılar',
     'delete.excludeMode': 'Seçili Uzantılar Hariç',
+    'delete.allMode': 'Tüm Dosyalar',
     'delete.filesFound': 'dosya bulundu',
     'delete.totalSize': 'Toplam Boyut',
     'delete.fileCount': 'Dosya Sayısı',
@@ -75,6 +78,26 @@ const translations = {
     'delete.successMessage': 'Dosyalar başarıyla çöp kutusuna taşındı!',
     'delete.error': 'Hata oluştu',
     'delete.noFiles': 'Dosya bulunamadı',
+    'delete.selectAll': 'Tümünü Seç',
+    'delete.deselectAll': 'Tümünü Kaldır',
+    'delete.selectedFiles': 'Seçili Dosya',
+    'delete.selectedSize': 'Seçili Boyut',
+
+    // Saved Paths
+    'savedPaths.title': 'Kaydedilmiş Klasörler',
+    'savedPaths.save': 'Bu Klasörü Kaydet',
+    'savedPaths.savePath': 'Klasörü Favorilere Ekle',
+    'savedPaths.pathName': 'Klasör Adı',
+    'savedPaths.pathNamePlaceholder': 'Örn: Medya Klasörü, İndirilenler...',
+    'savedPaths.saveSuccess': 'Klasör başarıyla kaydedildi!',
+    'savedPaths.saveError': 'Klasör kaydedilemedi',
+    'savedPaths.deleteConfirm': 'Bu kaydedilmiş klasörü silmek istediğinizden emin misiniz?',
+    'savedPaths.deleteSuccess': 'Klasör başarıyla silindi!',
+    'savedPaths.empty': 'Henüz kaydedilmiş klasör yok',
+    'savedPaths.emptyDesc': 'Sık kullandığınız klasörleri hızlı erişim için kaydedin',
+    'savedPaths.edit': 'Düzenle',
+    'savedPaths.delete': 'Sil',
+    'savedPaths.use': 'Kullan',
 
     // Statistics
     'stats.title': 'İstatistikler',
@@ -127,6 +150,18 @@ const translations = {
     'changelog.v1.system.multilang': 'Çoklu dil desteği (Türkçe & İngilizce)',
     'changelog.v1.system.electron': 'Electron.js tabanlı masaüstü uygulama',
 
+    // v1.1.0 Changelog
+    'changelog.v1.1.savedpaths.system': 'Kaydedilmiş klasör yönetimi sistemi',
+    'changelog.v1.1.savedpaths.quick': 'Sık kullanılan klasörlere hızlı erişim',
+    'changelog.v1.1.savedpaths.manage': 'Klasör kaydetme, düzenleme ve silme özellikleri',
+    'changelog.v1.1.allmode.delete': 'Tüm dosyaları silme modu eklendi',
+    'changelog.v1.1.allmode.extension': 'Uzantı farkı gözetmeksizin toplu silme',
+    'changelog.v1.1.selection.checkbox': 'Her dosya için seçim checkbox\'ı',
+    'changelog.v1.1.selection.bulk': 'Tümünü Seç / Tümünü Kaldır butonları',
+    'changelog.v1.1.selection.smart': 'Sadece seçili dosyaların silinmesi',
+    'changelog.v1.1.stats.dynamic': 'Dinamik seçili dosya istatistikleri',
+    'changelog.v1.1.stats.realtime': 'Anlık dosya sayısı ve boyut gösterimi',
+
     // Common
     'common.close': 'Kapat',
     'common.confirm': 'Onayla',
@@ -153,6 +188,8 @@ const translations = {
     'about.features.themes': 'Tema Desteği',
     'about.features.themesDesc': 'Koyu ve açık tema seçenekleri ile rahat kullanım',
     'about.company': 'Brainy Tech tarafından geliştirilmiştir. Profesyonel yazılım çözümleri sunuyoruz.',
+    'about.contact.title': 'İletişim',
+    'about.contact.message': 'Proje talepleriniz, özelleştirme ihtiyaçlarınız veya bu proje hakkında bizimle iletişime geçmek için aşağıdaki kanalları kullanabilirsiniz.',
     'about.copyrightText': 'Tüm hakları saklıdır.',
   },
   en: {
@@ -204,6 +241,8 @@ const translations = {
     'delete.modeIncludeDesc': 'Only files with specified extensions will be deleted. Example: mp3,mp4,jpg',
     'delete.modeExclude': 'Delete All Except These',
     'delete.modeExcludeDesc': 'All files except specified extensions will be deleted. Use with caution!',
+    'delete.modeAll': 'Delete All Files',
+    'delete.modeAllDesc': 'Allows you to list and delete all files in the folder regardless of extension.',
     'delete.mediaFiles': 'Media',
     'delete.imageFiles': 'Images',
     'delete.documentFiles': 'Documents',
@@ -213,6 +252,7 @@ const translations = {
     'delete.preview': 'Preview',
     'delete.includeMode': 'Only Selected Extensions',
     'delete.excludeMode': 'Except Selected Extensions',
+    'delete.allMode': 'All Files',
     'delete.filesFound': 'files found',
     'delete.totalSize': 'Total Size',
     'delete.fileCount': 'File Count',
@@ -226,6 +266,26 @@ const translations = {
     'delete.successMessage': 'Files successfully moved to trash!',
     'delete.error': 'An error occurred',
     'delete.noFiles': 'No files found',
+    'delete.selectAll': 'Select All',
+    'delete.deselectAll': 'Deselect All',
+    'delete.selectedFiles': 'Selected Files',
+    'delete.selectedSize': 'Selected Size',
+
+    // Saved Paths
+    'savedPaths.title': 'Saved Folders',
+    'savedPaths.save': 'Save This Folder',
+    'savedPaths.savePath': 'Add Folder to Favorites',
+    'savedPaths.pathName': 'Folder Name',
+    'savedPaths.pathNamePlaceholder': 'e.g. Media Folder, Downloads...',
+    'savedPaths.saveSuccess': 'Folder saved successfully!',
+    'savedPaths.saveError': 'Failed to save folder',
+    'savedPaths.deleteConfirm': 'Are you sure you want to delete this saved folder?',
+    'savedPaths.deleteSuccess': 'Folder deleted successfully!',
+    'savedPaths.empty': 'No saved folders yet',
+    'savedPaths.emptyDesc': 'Save frequently used folders for quick access',
+    'savedPaths.edit': 'Edit',
+    'savedPaths.delete': 'Delete',
+    'savedPaths.use': 'Use',
 
     // Statistics
     'stats.title': 'Statistics',
@@ -278,6 +338,18 @@ const translations = {
     'changelog.v1.system.multilang': 'Multi-language support (Turkish & English)',
     'changelog.v1.system.electron': 'Electron.js based desktop application',
 
+    // v1.1.0 Changelog
+    'changelog.v1.1.savedpaths.system': 'Saved folder management system',
+    'changelog.v1.1.savedpaths.quick': 'Quick access to frequently used folders',
+    'changelog.v1.1.savedpaths.manage': 'Save, edit, and delete folder features',
+    'changelog.v1.1.allmode.delete': 'Added delete all files mode',
+    'changelog.v1.1.allmode.extension': 'Bulk deletion regardless of extension',
+    'changelog.v1.1.selection.checkbox': 'Checkbox selection for each file',
+    'changelog.v1.1.selection.bulk': 'Select All / Deselect All buttons',
+    'changelog.v1.1.selection.smart': 'Delete only selected files',
+    'changelog.v1.1.stats.dynamic': 'Dynamic selected files statistics',
+    'changelog.v1.1.stats.realtime': 'Real-time file count and size display',
+
     // Common
     'common.close': 'Close',
     'common.confirm': 'Confirm',
@@ -304,6 +376,8 @@ const translations = {
     'about.features.themes': 'Theme Support',
     'about.features.themesDesc': 'Dark and light theme options for comfortable usage',
     'about.company': 'Developed by Brainy Tech. We provide professional software solutions.',
+    'about.contact.title': 'Contact',
+    'about.contact.message': 'For your project requests, customization needs, or to get in touch with us about this project, you can use the following channels.',
     'about.copyrightText': 'All rights reserved.',
   },
 };

@@ -42,6 +42,18 @@ class DatabaseManager {
       )
     `);
 
+    // Saved paths table (favorites)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS saved_paths (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        profile_id INTEGER NOT NULL,
+        path TEXT NOT NULL,
+        name TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+      )
+    `);
+
     // Deletion operations table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS deletion_operations (
@@ -83,6 +95,7 @@ class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_deleted_files_profile ON deleted_files(profile_id);
       CREATE INDEX IF NOT EXISTS idx_deleted_files_extension ON deleted_files(file_extension);
       CREATE INDEX IF NOT EXISTS idx_deleted_files_date ON deleted_files(deleted_at);
+      CREATE INDEX IF NOT EXISTS idx_saved_paths_profile ON saved_paths(profile_id);
     `);
   }
 
@@ -275,6 +288,81 @@ class DatabaseManager {
       FROM deletion_operations do
       WHERE do.profile_id = ?
     `).get(profileId, profileId);
+  }
+
+  // ============ SAVED PATHS OPERATIONS ============
+
+  createSavedPath(profileId, path, name) {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO saved_paths (profile_id, path, name)
+        VALUES (?, ?, ?)
+      `);
+      const result = stmt.run(profileId, path, name);
+      return {
+        success: true,
+        id: result.lastInsertRowid,
+        message: 'Path saved successfully'
+      };
+    } catch (error) {
+      console.error('Create saved path error:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+
+  getSavedPaths(profileId) {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM saved_paths
+        WHERE profile_id = ?
+        ORDER BY created_at DESC
+      `);
+      return stmt.all(profileId);
+    } catch (error) {
+      console.error('Get saved paths error:', error);
+      return [];
+    }
+  }
+
+  deleteSavedPath(id) {
+    try {
+      const stmt = this.db.prepare(`
+        DELETE FROM saved_paths WHERE id = ?
+      `);
+      const result = stmt.run(id);
+      return {
+        success: result.changes > 0,
+        message: result.changes > 0 ? 'Path deleted' : 'Path not found'
+      };
+    } catch (error) {
+      console.error('Delete saved path error:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+
+  updateSavedPath(id, name) {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE saved_paths SET name = ? WHERE id = ?
+      `);
+      const result = stmt.run(name, id);
+      return {
+        success: result.changes > 0,
+        message: result.changes > 0 ? 'Path updated' : 'Path not found'
+      };
+    } catch (error) {
+      console.error('Update saved path error:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
   }
 
   close() {

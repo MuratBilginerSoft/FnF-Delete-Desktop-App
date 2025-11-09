@@ -51,4 +51,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getDashboardStats: (profileId) =>
     ipcRenderer.invoke('stats:getDashboard', profileId),
+
+  // Saved Paths operations
+  createSavedPath: (profileId, path, name) =>
+    ipcRenderer.invoke('savedPath:create', { profileId, path, name }),
+
+  getAllSavedPaths: (profileId) =>
+    ipcRenderer.invoke('savedPath:getAll', profileId),
+
+  deleteSavedPath: (id) =>
+    ipcRenderer.invoke('savedPath:delete', id),
+
+  updateSavedPath: (id, name) =>
+    ipcRenderer.invoke('savedPath:update', { id, name }),
 });

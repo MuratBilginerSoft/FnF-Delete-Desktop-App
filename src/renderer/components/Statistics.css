@@ -1,9 +1,36 @@
 /* Statistics Page Styles */
 
 .statistics {
-  padding: 32px;
+  padding: 0;
+  padding-bottom: 40px;
   height: 100%;
+  background: transparent;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+}
+
+.statistics > *:not(.app-footer) {
+  padding-left: 32px;
+  padding-right: 32px;
+  flex-shrink: 0;
+}
+
+.statistics > .stats-header {
+  padding-top: 32px;
+}
+
+.statistics > .summary-cards {
+  padding-top: 0;
+}
+
+.statistics > .charts-grid {
+  padding-top: 0;
+}
+
+.statistics > .recent-operations {
+  margin: 0 32px 32px 32px;
 }
 
 /* Stats Header */
@@ -251,8 +278,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .statistics {
-    padding: 20px;
+  .statistics > *:not(.app-footer) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .statistics > .stats-header {
+    padding-top: 20px;
+  }
+
+  .statistics > .recent-operations {
+    margin: 0 20px 20px 20px;
   }
 
   .stats-header-content {
