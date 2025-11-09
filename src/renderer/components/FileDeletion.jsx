@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import useProfileStore from '../store/useProfileStore';
 import './FileDeletion.css';
@@ -16,8 +16,32 @@ export default function FileDeletion() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+  const [selectedFiles, setSelectedFiles] = useState(new Set()); // Track selected file paths
+
+  // Saved paths states
+  const [savedPaths, setSavedPaths] = useState([]);
+  const [showSavePathModal, setShowSavePathModal] = useState(false);
+  const [savePathName, setSavePathName] = useState('');
+  const [showSavedPaths, setShowSavedPaths] = useState(true);
+  const [showDeletePathModal, setShowDeletePathModal] = useState(false);
+  const [pathToDelete, setPathToDelete] = useState(null);
 
   const previewRef = useRef(null);
+
+  // Load saved paths on component mount
+  useEffect(() => {
+    loadSavedPaths();
+  }, [currentProfile]);
+
+  const loadSavedPaths = async () => {
+    if (!currentProfile) return;
+    try {
+      const paths = await window.electronAPI.getAllSavedPaths(currentProfile.id);
+      setSavedPaths(paths);
+    } catch (error) {
+      console.error('Load saved paths error:', error);
+    }
+  };
 
   const handleBrowse = async () => {
     try {
@@ -43,6 +67,69 @@ export default function FileDeletion() {
 
   const handleClearPath = () => {
     setScanPath('');
+  };
+
+  // Saved paths functions
+  const handleSavePath = () => {
+    if (!scanPath.trim()) {
+      setNotification({ show: true, type: 'error', message: t('delete.pathPlaceholder') });
+      return;
+    }
+    setShowSavePathModal(true);
+  };
+
+  const handleConfirmSavePath = async () => {
+    if (!savePathName.trim()) {
+      setNotification({ show: true, type: 'error', message: t('savedPaths.pathName') });
+      return;
+    }
+
+    try {
+      const result = await window.electronAPI.createSavedPath(
+        currentProfile.id,
+        scanPath,
+        savePathName.trim()
+      );
+
+      if (result.success) {
+        setNotification({ show: true, type: 'success', message: t('savedPaths.saveSuccess') });
+        setSavePathName('');
+        setShowSavePathModal(false);
+        loadSavedPaths();
+      } else {
+        setNotification({ show: true, type: 'error', message: result.message || t('savedPaths.saveError') });
+      }
+    } catch (error) {
+      console.error('Save path error:', error);
+      setNotification({ show: true, type: 'error', message: t('savedPaths.saveError') });
+    }
+  };
+
+  const handleUseSavedPath = (path) => {
+    setScanPath(path);
+  };
+
+  const handleDeleteSavedPath = (savedPath) => {
+    setPathToDelete(savedPath);
+    setShowDeletePathModal(true);
+  };
+
+  const confirmDeleteSavedPath = async () => {
+    if (!pathToDelete) return;
+
+    try {
+      const result = await window.electronAPI.deleteSavedPath(pathToDelete.id);
+      if (result.success) {
+        setNotification({ show: true, type: 'success', message: t('savedPaths.deleteSuccess') });
+        loadSavedPaths();
+      }
+    } catch (error) {
+      console.error('Delete saved path error:', error);
+      setNotification({ show: true, type: 'error', message: t('delete.error') });
+    } finally {
+      setShowDeletePathModal(false);
+      setPathToDelete(null);
+    }
   };
 
   const toggleExtension = (ext) => {
@@ -97,13 +184,41 @@ export default function FileDeletion() {
     archives: ['zip', 'rar', '7z', 'tar', 'gz'],
   };
 
+  // File selection handlers
+  const toggleFileSelection = (filePath) => {
+    const newSelected = new Set(selectedFiles);
+    if (newSelected.has(filePath)) {
+      newSelected.delete(filePath);
+    } else {
+      newSelected.add(filePath);
+    }
+    setSelectedFiles(newSelected);
+  };
+
+  const selectAllFiles = () => {
+    const allFilePaths = new Set(scannedFiles.map(f => f.path));
+    setSelectedFiles(allFilePaths);
+  };
+
+  const deselectAllFiles = () => {
+    setSelectedFiles(new Set());
+  };
+
+  // Calculate selected files size
+  const getSelectedFilesSize = () => {
+    return scannedFiles
+      .filter(file => selectedFiles.has(file.path))
+      .reduce((sum, file) => sum + file.size, 0);
+  };
+
   const handleScan = async () => {
     if (!scanPath.trim()) {
       setNotification({ show: true, type: 'error', message: t('delete.pathPlaceholder') });
       return;
     }
 
-    if (!extensions.trim()) {
+    // Only check extensions if not in 'all' mode
+    if (mode !== 'all' && !extensions.trim()) {
       setNotification({ show: true, type: 'error', message: t('delete.extensionsPlaceholder') });
       return;
     }
@@ -122,6 +237,10 @@ export default function FileDeletion() {
       if (result.success) {
         setScannedFiles(result.files);
         setTotalSize(result.totalSize);
+
+        // Select all files by default
+        const allFilePaths = new Set(result.files.map(f => f.path));
+        setSelectedFiles(allFilePaths);
 
         // Scroll to preview section smoothly after scan completes
         setTimeout(() => {
@@ -144,23 +263,25 @@ export default function FileDeletion() {
   };
 
   const handleDelete = async () => {
-    if (scannedFiles.length === 0) return;
+    if (selectedFiles.size === 0) return;
 
     try {
       setDeleting(true);
 
-      // Move files to trash
-      const filePaths = scannedFiles.map((f) => f.path);
-      const deleteResult = await window.electronAPI.moveToTrash(filePaths);
+      // Move only selected files to trash
+      const selectedFilePaths = Array.from(selectedFiles);
+      const deleteResult = await window.electronAPI.moveToTrash(selectedFilePaths);
 
       if (deleteResult.success) {
-        // Save operation to database
-        const filesData = scannedFiles.map((f) => ({
-          path: f.path,
-          name: f.name,
-          extension: f.extension,
-          size: f.size,
-        }));
+        // Save operation to database (only selected files)
+        const filesData = scannedFiles
+          .filter(f => selectedFiles.has(f.path))
+          .map((f) => ({
+            path: f.path,
+            name: f.name,
+            extension: f.extension,
+            size: f.size,
+          }));
 
         await window.electronAPI.createOperation(
           currentProfile.id,
@@ -178,6 +299,7 @@ export default function FileDeletion() {
         setScanPath('');
         setExtensions('');
         setShowConfirm(false);
+        setSelectedFiles(new Set());
       } else {
         setNotification({ show: true, type: 'error', message: deleteResult.message || t('delete.error') });
       }
@@ -200,40 +322,69 @@ export default function FileDeletion() {
   return (
     <div className="file-deletion">
       <div className="deletion-container">
-        {/* Info Section - Mode Explanation */}
-        <div className="mode-info-section">
-          <div className="mode-info-card">
-            <div className="mode-info-icon include-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3>{t('delete.modeInclude')}</h3>
-              <p>{t('delete.modeIncludeDesc')}</p>
-            </div>
-          </div>
+        {/* Mode Selector - Moved to Top */}
+        <div className="mode-selector-section card">
+          <label className="mode-selector-label">{t('delete.mode')}</label>
+          <div className="mode-selector-grid">
+            <button
+              className={`mode-btn-card ${mode === 'include' ? 'active' : ''}`}
+              onClick={() => setMode('include')}
+            >
+              <div className="mode-btn-icon include-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div className="mode-btn-content">
+                <h3>{t('delete.modeInclude')}</h3>
+                <p>{t('delete.modeIncludeDesc')}</p>
+              </div>
+            </button>
 
-          <div className="mode-info-card">
-            <div className="mode-info-icon exclude-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3>{t('delete.modeExclude')}</h3>
-              <p>{t('delete.modeExcludeDesc')}</p>
-            </div>
+            <button
+              className={`mode-btn-card ${mode === 'exclude' ? 'active' : ''}`}
+              onClick={() => setMode('exclude')}
+            >
+              <div className="mode-btn-icon exclude-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+              <div className="mode-btn-content">
+                <h3>{t('delete.modeExclude')}</h3>
+                <p>{t('delete.modeExcludeDesc')}</p>
+              </div>
+            </button>
+
+            <button
+              className={`mode-btn-card ${mode === 'all' ? 'active' : ''}`}
+              onClick={() => setMode('all')}
+            >
+              <div className="mode-btn-icon all-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <div className="mode-btn-content">
+                <h3>{t('delete.modeAll')}</h3>
+                <p>{t('delete.modeAllDesc')}</p>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -291,10 +442,95 @@ export default function FileDeletion() {
                 </svg>
                 {t('delete.browse')}
               </button>
+              <button
+                className="btn btn-secondary save-path-btn"
+                onClick={handleSavePath}
+                disabled={!scanPath.trim()}
+                title={t('savedPaths.save')}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
 
-          <div className="form-group">
+          {/* Saved Paths Section */}
+          {savedPaths.length > 0 && (
+            <div className="saved-paths-section">
+              <div className="saved-paths-header">
+                <h3>{t('savedPaths.title')}</h3>
+                <button
+                  className="toggle-saved-btn"
+                  onClick={() => setShowSavedPaths(!showSavedPaths)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="20"
+                    height="20"
+                    style={{ transform: showSavedPaths ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+              {showSavedPaths && (
+                <div className="saved-paths-list">
+                  {savedPaths.map((savedPath) => (
+                    <div
+                      key={savedPath.id}
+                      className="saved-path-item"
+                      onClick={() => handleUseSavedPath(savedPath.path)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="saved-path-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="saved-path-info">
+                        <div className="saved-path-name">{savedPath.name}</div>
+                        <div className="saved-path-path">{savedPath.path}</div>
+                      </div>
+                      <div className="saved-path-actions">
+                        <button
+                          className="btn-icon delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSavedPath(savedPath);
+                          }}
+                          title={t('savedPaths.delete')}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="form-group" style={{ display: mode === 'all' ? 'none' : 'block' }}>
             <label>{t('delete.extensions')}</label>
             <input
               type="text"
@@ -451,44 +687,10 @@ export default function FileDeletion() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label>{t('delete.mode')}</label>
-            <div className="mode-selector">
-              <button
-                className={`mode-btn ${mode === 'include' ? 'active' : ''}`}
-                onClick={() => setMode('include')}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                {t('delete.modeInclude')}
-              </button>
-              <button
-                className={`mode-btn ${mode === 'exclude' ? 'active' : ''}`}
-                onClick={() => setMode('exclude')}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                {t('delete.modeExclude')}
-              </button>
-            </div>
-          </div>
-
           <button
             className="btn btn-primary scan-btn"
             onClick={handleScan}
-            disabled={scanning || !scanPath.trim() || !extensions.trim()}
+            disabled={scanning || !scanPath.trim() || (mode !== 'all' && !extensions.trim())}
           >
             {scanning ? (
               <>
@@ -516,40 +718,84 @@ export default function FileDeletion() {
           <div ref={previewRef} className="preview-section card">
             <div className="preview-header">
               <div className="preview-title-row">
-                <h2>{t('delete.preview')}</h2>
-                <div className={`mode-badge ${mode}`}>
-                  {mode === 'include' ? (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {t('delete.includeMode')}
-                    </>
-                  ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      {t('delete.excludeMode')}
-                    </>
-                  )}
+                <div className="preview-title-left">
+                  <h2>{t('delete.preview')}</h2>
+                  <div className={`mode-badge ${mode}`}>
+                    {mode === 'include' ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {t('delete.includeMode')}
+                      </>
+                    ) : mode === 'all' ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        {t('delete.allMode')}
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        {t('delete.excludeMode')}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="preview-stats">
+                  <div className="stat-item">
+                    <span className="stat-value">{scannedFiles.length}</span>
+                    <span className="stat-label">{t('delete.filesFound')}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">{selectedFiles.size}</span>
+                    <span className="stat-label">{t('delete.selectedFiles')}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">{formatBytes(getSelectedFilesSize())}</span>
+                    <span className="stat-label">{t('delete.selectedSize')}</span>
+                  </div>
                 </div>
               </div>
-              <div className="preview-stats">
-                <div className="stat-item">
-                  <span className="stat-value">{scannedFiles.length}</span>
-                  <span className="stat-label">{t('delete.filesFound')}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-value">{formatBytes(totalSize)}</span>
-                  <span className="stat-label">{t('delete.totalSize')}</span>
-                </div>
+
+              {/* Selection Controls */}
+              <div className="selection-controls">
+                <button
+                  className="btn btn-secondary"
+                  onClick={selectAllFiles}
+                  style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {t('delete.selectAll')}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={deselectAllFiles}
+                  style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {t('delete.deselectAll')}
+                </button>
               </div>
             </div>
 
             <div className="files-list">
               {scannedFiles.slice(0, 100).map((file, index) => (
                 <div key={index} className="file-item">
+                  <input
+                    type="checkbox"
+                    checked={selectedFiles.has(file.path)}
+                    onChange={() => toggleFileSelection(file.path)}
+                    className="file-checkbox"
+                  />
                   <div className="file-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path
@@ -581,6 +827,7 @@ export default function FileDeletion() {
               <button
                 className="btn btn-danger"
                 onClick={() => setShowConfirm(true)}
+                disabled={selectedFiles.size === 0}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                   <path
@@ -642,12 +889,12 @@ export default function FileDeletion() {
 
             <div className="confirm-delete-info">
               <div className="confirm-stat">
-                <span className="confirm-label">{t('delete.fileCount')}</span>
-                <span className="confirm-value">{scannedFiles.length}</span>
+                <span className="confirm-label">{t('delete.selectedFiles')}</span>
+                <span className="confirm-value">{selectedFiles.size}</span>
               </div>
               <div className="confirm-stat">
-                <span className="confirm-label">{t('delete.totalSize')}</span>
-                <span className="confirm-value">{formatBytes(scannedFiles.reduce((sum, file) => sum + file.size, 0))}</span>
+                <span className="confirm-label">{t('delete.selectedSize')}</span>
+                <span className="confirm-value">{formatBytes(getSelectedFilesSize())}</span>
               </div>
             </div>
             <div className="confirm-delete-buttons">
@@ -689,6 +936,136 @@ export default function FileDeletion() {
                     {t('delete.confirmDelete')}
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Path Confirmation Modal */}
+      {showDeletePathModal && pathToDelete && (
+        <div className="confirm-delete-overlay" onClick={() => setShowDeletePathModal(false)}>
+          <div className="confirm-delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-delete-icon delete-warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <h2>{t('savedPaths.deleteConfirm')}</h2>
+            <div className="confirm-info-box">
+              <div style={{ marginBottom: '8px' }}>
+                <strong>{pathToDelete.name}</strong>
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                {pathToDelete.path}
+              </div>
+            </div>
+            <div className="confirm-delete-buttons">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowDeletePathModal(false);
+                  setPathToDelete(null);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                {t('common.cancel')}
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={confirmDeleteSavedPath}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                {t('savedPaths.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Path Modal */}
+      {showSavePathModal && (
+        <div className="confirm-delete-overlay" onClick={() => setShowSavePathModal(false)}>
+          <div className="confirm-delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-delete-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
+            </div>
+            <h2>{t('savedPaths.savePath')}</h2>
+            <div className="confirm-info-box">
+              <p>{scanPath}</p>
+            </div>
+            <div className="form-group" style={{ width: '100%', marginTop: '20px' }}>
+              <label>{t('savedPaths.pathName')}</label>
+              <input
+                type="text"
+                value={savePathName}
+                onChange={(e) => setSavePathName(e.target.value)}
+                placeholder={t('savedPaths.pathNamePlaceholder')}
+                autoFocus
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleConfirmSavePath();
+                  }
+                }}
+              />
+            </div>
+            <div className="confirm-delete-buttons">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowSavePathModal(false);
+                  setSavePathName('');
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                {t('common.cancel')}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleConfirmSavePath}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                {t('savedPaths.save')}
               </button>
             </div>
           </div>

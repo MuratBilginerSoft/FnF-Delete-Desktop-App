@@ -1,6 +1,6 @@
 {
   "name": "fnf-delete",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "File N Folder Delete - Professional desktop app for managing file deletion with statistics",
   "main": "src/main/main.js",
   "scripts": {

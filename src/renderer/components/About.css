@@ -1,11 +1,32 @@
 /* About Page Styles */
 
 .about-page {
-  padding: 48px 32px;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 100%;
+  padding: 0;
+  padding-bottom: 40px;
+  height: 100%;
+  background: transparent;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+}
+
+.about-page > *:not(.app-footer) {
+  padding-left: 48px;
+  padding-right: 48px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.about-page > .about-hero {
+  padding-top: 48px;
+}
+
+.about-page > .about-section:last-of-type {
+  padding-bottom: 32px;
 }
 
 /* Hero Section */
@@ -156,31 +177,86 @@
 .company-logo {
   height: 40px;
   width: auto;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   opacity: 0.9;
 }
 
-.about-company h2 {
-  font-size: 1.5rem;
-  margin-bottom: 12px;
-}
-
-.about-company p {
+.company-description {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto 16px;
+  font-size: 1.05rem;
 }
 
-/* Footer */
-.about-footer {
-  text-align: center;
-  padding: 24px 0;
-  margin-top: 48px;
+/* Contact Information */
+.contact-info {
+  margin-top: 40px;
+  padding-top: 32px;
   border-top: 1px solid var(--border-color);
 }
 
-.about-footer p {
-  font-size: 0.875rem;
-  color: var(--text-muted);
+.contact-info h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.contact-message {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto 64px;
+  line-height: 1.7;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 250px;
+  max-width: 320px;
+}
+
+.contact-item:hover {
+  border-color: var(--accent-color);
+  background: rgba(0, 163, 255, 0.05);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 163, 255, 0.2);
+}
+
+.contact-item svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.contact-item a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.contact-item:hover a {
+  color: var(--accent-color);
 }
 
 /* Animations */
@@ -195,8 +271,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .about-page {
-    padding: 32px 16px;
+  .about-page > *:not(.app-footer) {
+    padding-left: 32px;
+    padding-right: 16px;
+  }
+
+  .about-page > .about-hero {
+    padding-top: 32px;
+  }
+
+  .about-page > .about-section:last-of-type {
+    padding-bottom: 20px;
   }
 
   .about-title {
@@ -213,5 +298,19 @@
 
   .features-grid {
     grid-template-columns: 1fr;
+  }
+
+  .contact-details {
+    max-width: 100%;
+    flex-direction: column;
+  }
+
+  .contact-item {
+    padding: 12px 16px;
+    max-width: 100%;
+  }
+
+  .contact-item a {
+    font-size: 0.9rem;
   }
 }

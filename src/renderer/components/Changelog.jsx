@@ -6,6 +6,43 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.1.0',
+      date: '2025-02-05',
+      type: 'minor',
+      changes: [
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.1.savedpaths.system',
+            'changelog.v1.1.savedpaths.quick',
+            'changelog.v1.1.savedpaths.manage',
+          ]
+        },
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.1.allmode.delete',
+            'changelog.v1.1.allmode.extension',
+          ]
+        },
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.1.selection.checkbox',
+            'changelog.v1.1.selection.bulk',
+            'changelog.v1.1.selection.smart',
+          ]
+        },
+        {
+          category: 'improvement',
+          items: [
+            'changelog.v1.1.stats.dynamic',
+            'changelog.v1.1.stats.realtime',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.0.0',
       date: '2025-01-24',
       type: 'major',

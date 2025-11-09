@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![Version](https://img.shields.io/badge/Version-1.0.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![Version](https://img.shields.io/badge/Version-1.1.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
@@ -29,6 +29,9 @@
 ### ✨ Key Features
 
 - 🔍 **Smart File Scanning** - Scan directories by file extensions with include/exclude modes
+- 💾 **Saved Paths System** - Save and quickly access frequently used directory paths
+- 🗑️ **All Files Mode** - Delete all files in a directory regardless of extension
+- ☑️ **File Selection** - Select specific files with checkboxes before deletion
 - 📊 **Detailed Statistics** - Track all your deletion operations with comprehensive analytics
 - 👥 **Multi-Profile Support** - Create separate profiles for different users or projects
 - 🎨 **Modern UI Design** - Beautiful UEFA Champions League-inspired color scheme
@@ -36,7 +39,7 @@
 - 🌍 **Bilingual Interface** - Full support for Turkish and English languages
 - ♻️ **Safe Deletion** - Files are moved to trash, allowing recovery if needed
 - ⚡ **Fast Performance** - Built with Electron and React for optimal speed
-- 💾 **SQLite Database** - Local data storage with better-sqlite3
+- 💿 **SQLite Database** - Local data storage with better-sqlite3
 
 ### 🔒 Security & Safety
 
@@ -94,8 +97,8 @@ We're working on obtaining a code signing certificate to eliminate this warning 
 #### For Users
 
 1. Download the latest release for your platform:
-   - **Windows**: `FnF Delete Setup 1.0.0.exe`
-   - **Linux**: `FnF-Delete-1.0.0.AppImage` (Universal) or `fnf-delete_1.0.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.1.0.exe`
+   - **Linux**: `FnF-Delete-1.1.0.AppImage` (Universal) or `fnf-delete_1.1.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Coming soon!
 
 2. Install and run the application
@@ -168,6 +171,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### ✨ Özellikler
 
 - 🔍 **Akıllı Dosya Tarama** - Dahil etme/hariç tutma modları ile uzantılara göre klasör tarama
+- 💾 **Kaydedilmiş Yollar Sistemi** - Sık kullanılan dizin yollarını kaydedin ve hızlıca erişin
+- 🗑️ **Tüm Dosyalar Modu** - Uzantıdan bağımsız olarak bir dizindeki tüm dosyaları silin
+- ☑️ **Dosya Seçimi** - Silmeden önce onay kutuları ile belirli dosyaları seçin
 - 📊 **Detaylı İstatistikler** - Kapsamlı analizlerle tüm silme işlemlerinizi takip edin
 - 👥 **Çoklu Profil Desteği** - Farklı kullanıcılar veya projeler için ayrı profiller oluşturun
 - 🎨 **Modern Arayüz Tasarımı** - UEFA Şampiyonlar Ligi'nden ilham alan güzel renk şeması
@@ -175,7 +181,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🌍 **İki Dilli Arayüz** - Türkçe ve İngilizce tam desteği
 - ♻️ **Güvenli Silme** - Dosyalar çöp kutusuna taşınır, gerekirse kurtarılabilir
 - ⚡ **Hızlı Performans** - Optimal hız için Electron ve React ile geliştirilmiştir
-- 💾 **SQLite Veritabanı** - better-sqlite3 ile yerel veri depolama
+- 💿 **SQLite Veritabanı** - better-sqlite3 ile yerel veri depolama
 
 ### 🔒 Güvenlik ve Emniyet
 
@@ -233,8 +239,8 @@ Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifik
 #### Kullanıcılar İçin
 
 1. Platformunuz için en son sürümü indirin:
-   - **Windows**: `FnF Delete Setup 1.0.0.exe`
-   - **Linux**: `FnF-Delete-1.0.0.AppImage` (Evrensel) veya `fnf-delete_1.0.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.1.0.exe`
+   - **Linux**: `FnF-Delete-1.1.0.AppImage` (Evrensel) veya `fnf-delete_1.1.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın

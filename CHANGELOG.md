@@ -5,6 +5,50 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-25
+
+### Added
+
+#### Saved Paths System
+- Save and manage frequently used directory paths
+- Quick access to saved paths via dropdown menu
+- Edit and delete saved paths functionality
+- Path list with last used timestamps
+- Persistent storage of saved paths per profile
+
+#### All Files Mode
+- New "All Files" deletion mode option
+- Delete all files in a directory regardless of extension
+- Toggle between extension-based and all-files deletion
+- Clear warning indicators for all-files mode
+- Safety confirmation modal for all-files operations
+
+#### File Selection Features
+- Individual file selection with checkboxes
+- "Select All" / "Deselect All" quick actions
+- Selected files counter and total size display
+- Delete only selected files functionality
+- Visual feedback for selected items
+- Improved file preview with selection controls
+
+#### Enhanced Statistics
+- Dynamic statistics that update after each operation
+- Real-time data refresh on Statistics page
+- Improved chart visualizations with better data handling
+- Better empty state handling for statistics
+
+### Changed
+- Improved file deletion workflow with selection options
+- Enhanced user interface for path management
+- Better modal designs for confirmations
+- Updated statistics page layout and animations
+- Enhanced About page with company contact information (email, phone, website)
+
+### Fixed
+- Statistics page "Recent Operations" container alignment
+- Proper spacing and margins for UI components
+- Footer positioning consistency across pages
+
 ## [1.0.0] - 2025-01-24
 
 ### Added
