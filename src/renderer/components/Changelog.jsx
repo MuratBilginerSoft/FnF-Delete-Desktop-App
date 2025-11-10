@@ -6,6 +6,31 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.2.0',
+      date: '2025-01-26',
+      type: 'minor',
+      changes: [
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.2.recursive.control',
+            'changelog.v1.2.recursive.profilebased',
+            'changelog.v1.2.recursive.persistent',
+            'changelog.v1.2.recursive.methods',
+          ]
+        },
+        {
+          category: 'improvement',
+          items: [
+            'changelog.v1.2.ui.compact',
+            'changelog.v1.2.ui.browse',
+            'changelog.v1.2.ui.alignment',
+            'changelog.v1.2.ui.info',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.1.0',
       date: '2025-02-05',
       type: 'minor',
