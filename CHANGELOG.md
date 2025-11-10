@@ -5,6 +5,35 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-26
+
+### Added
+
+#### Recursive Scanning Control
+- Include/Exclude Subfolders toggle feature
+- Profile-based subfolder scanning settings
+- Persistent storage of subfolder preference per profile
+- Separate scanning methods for shallow (current folder only) and recursive (all subfolders)
+- Real-time toggle with immediate effect on next scan
+
+#### Enhanced User Interface
+- Compact checkbox design for Include Subfolders control
+- Browse button integrated into path input as icon
+- Improved button alignment and spacing
+- Info notification type with custom styling
+- Better visual feedback for scanning options
+
+### Changed
+- Moved Browse button from standalone to input-integrated icon
+- Optimized Include Subfolders control with compact design
+- Enhanced notification system with info type support
+- Improved deletion mode section spacing
+
+### Fixed
+- Text capitalization in Include Subfolders checkbox
+- Button alignment issues in path input group
+- Notification modal title display for info messages
+
 ## [1.1.0] - 2025-01-25
 
 ### Added

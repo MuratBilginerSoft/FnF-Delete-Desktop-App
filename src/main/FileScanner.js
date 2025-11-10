@@ -6,7 +6,7 @@ class FileScanner {
     this.cancelScan = false;
   }
 
-  async scanDirectory(scanPath, extensions, mode) {
+  async scanDirectory(scanPath, extensions, mode, includeSubfolders = true) {
     try {
       this.cancelScan = false;
 
@@ -46,9 +46,13 @@ class FileScanner {
         }
       }
 
-      // Scan recursively
+      // Scan based on includeSubfolders setting
       const files = [];
-      await this.scanRecursive(scanPath, extensionList, mode, files);
+      if (includeSubfolders) {
+        await this.scanRecursive(scanPath, extensionList, mode, files);
+      } else {
+        await this.scanShallow(scanPath, extensionList, mode, files);
+      }
 
       return {
         success: true,
@@ -64,6 +68,46 @@ class FileScanner {
         message: error.message,
         files: []
       };
+    }
+  }
+
+  async scanShallow(dirPath, extensionList, mode, foundFiles) {
+    if (this.cancelScan) return;
+
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (this.cancelScan) break;
+
+        const fullPath = path.join(dirPath, entry.name);
+
+        try {
+          // Only scan files, skip subdirectories
+          if (entry.isFile()) {
+            // Check if file matches criteria
+            const fileExt = path.extname(entry.name).toLowerCase().replace(/^\./, '');
+            const shouldInclude = this.shouldIncludeFile(fileExt, extensionList, mode);
+
+            if (shouldInclude) {
+              const stats = fs.statSync(fullPath);
+              foundFiles.push({
+                path: fullPath,
+                name: entry.name,
+                extension: fileExt,
+                size: stats.size,
+                directory: dirPath,
+                modifiedAt: stats.mtime
+              });
+            }
+          }
+        } catch (err) {
+          // Skip files that can't be accessed
+          console.warn(`Cannot access: ${fullPath}`, err.message);
+        }
+      }
+    } catch (error) {
+      console.warn(`Cannot read directory: ${dirPath}`, error.message);
     }
   }
 

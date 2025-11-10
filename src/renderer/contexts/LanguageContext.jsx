@@ -82,6 +82,8 @@ const translations = {
     'delete.deselectAll': 'Tümünü Kaldır',
     'delete.selectedFiles': 'Seçili Dosya',
     'delete.selectedSize': 'Seçili Boyut',
+    'delete.includeSubfolders': 'Alt klasörleri de tara',
+    'delete.includeSubfoldersDesc': 'Seçili klasörün içindeki tüm alt klasörlerdeki dosyalar da taranır',
 
     // Saved Paths
     'savedPaths.title': 'Kaydedilmiş Klasörler',
@@ -150,6 +152,16 @@ const translations = {
     'changelog.v1.system.multilang': 'Çoklu dil desteği (Türkçe & İngilizce)',
     'changelog.v1.system.electron': 'Electron.js tabanlı masaüstü uygulama',
 
+    // v1.2.0 Changelog
+    'changelog.v1.2.recursive.control': 'Alt klasörleri dahil et/hariç tut özelliği',
+    'changelog.v1.2.recursive.profilebased': 'Profil bazlı tarama ayarları',
+    'changelog.v1.2.recursive.persistent': 'Tarama tercihi kalıcı kayıt',
+    'changelog.v1.2.recursive.methods': 'Sadece ana klasör veya tüm alt klasörler tarama',
+    'changelog.v1.2.ui.compact': 'Kompakt checkbox tasarımı',
+    'changelog.v1.2.ui.browse': 'Gözat butonu input içine entegre edildi',
+    'changelog.v1.2.ui.alignment': 'Geliştirilmiş buton hizalama ve boşluklar',
+    'changelog.v1.2.ui.info': 'Bilgilendirme bildirimi türü eklendi',
+
     // v1.1.0 Changelog
     'changelog.v1.1.savedpaths.system': 'Kaydedilmiş klasör yönetimi sistemi',
     'changelog.v1.1.savedpaths.quick': 'Sık kullanılan klasörlere hızlı erişim',
@@ -169,6 +181,7 @@ const translations = {
     'common.loading': 'Yükleniyor...',
     'common.error': 'Hata',
     'common.success': 'Başarılı',
+    'common.info': 'Bilgilendirme',
     'common.yes': 'Evet',
     'common.back': 'Geri',
     'common.no': 'Hayır',
@@ -270,6 +283,8 @@ const translations = {
     'delete.deselectAll': 'Deselect All',
     'delete.selectedFiles': 'Selected Files',
     'delete.selectedSize': 'Selected Size',
+    'delete.includeSubfolders': 'Include Subfolder',
+    'delete.includeSubfoldersDesc': 'Also scan files in all subfolders within the selected folder',
 
     // Saved Paths
     'savedPaths.title': 'Saved Folders',
@@ -338,6 +353,16 @@ const translations = {
     'changelog.v1.system.multilang': 'Multi-language support (Turkish & English)',
     'changelog.v1.system.electron': 'Electron.js based desktop application',
 
+    // v1.2.0 Changelog
+    'changelog.v1.2.recursive.control': 'Include/Exclude subfolders feature',
+    'changelog.v1.2.recursive.profilebased': 'Profile-based scanning settings',
+    'changelog.v1.2.recursive.persistent': 'Persistent scanning preference storage',
+    'changelog.v1.2.recursive.methods': 'Scan current folder only or all subfolders',
+    'changelog.v1.2.ui.compact': 'Compact checkbox design',
+    'changelog.v1.2.ui.browse': 'Browse button integrated into input',
+    'changelog.v1.2.ui.alignment': 'Improved button alignment and spacing',
+    'changelog.v1.2.ui.info': 'Info notification type added',
+
     // v1.1.0 Changelog
     'changelog.v1.1.savedpaths.system': 'Saved folder management system',
     'changelog.v1.1.savedpaths.quick': 'Quick access to frequently used folders',
@@ -357,6 +382,7 @@ const translations = {
     'common.loading': 'Loading...',
     'common.error': 'Error',
     'common.success': 'Success',
+    'common.info': 'Information',
     'common.yes': 'Yes',
     'common.no': 'No',
     'common.back': 'Back',
