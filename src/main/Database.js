@@ -42,6 +42,16 @@ class DatabaseManager {
       )
     `);
 
+    // Profile settings table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS profile_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        profile_id INTEGER NOT NULL UNIQUE,
+        include_subfolders INTEGER DEFAULT 1,
+        FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+      )
+    `);
+
     // Saved paths table (favorites)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS saved_paths (
@@ -89,6 +99,7 @@ class DatabaseManager {
     // Create indexes for better performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_profiles_name ON profiles(name);
+      CREATE INDEX IF NOT EXISTS idx_profile_settings_profile ON profile_settings(profile_id);
       CREATE INDEX IF NOT EXISTS idx_deletion_operations_profile ON deletion_operations(profile_id);
       CREATE INDEX IF NOT EXISTS idx_deletion_operations_date ON deletion_operations(operation_date);
       CREATE INDEX IF NOT EXISTS idx_deleted_files_operation ON deleted_files(operation_id);
@@ -108,9 +119,18 @@ class DatabaseManager {
         VALUES (?, ?)
       `);
       const result = stmt.run(name, avatarColor);
+      const profileId = result.lastInsertRowid;
+
+      // Create default settings for the new profile
+      const settingsStmt = this.db.prepare(`
+        INSERT INTO profile_settings (profile_id, include_subfolders)
+        VALUES (?, 1)
+      `);
+      settingsStmt.run(profileId);
+
       return {
         success: true,
-        id: result.lastInsertRowid,
+        id: profileId,
         message: 'Profile created successfully'
       };
     } catch (error) {
@@ -362,6 +382,57 @@ class DatabaseManager {
         success: false,
         message: error.message
       };
+    }
+  }
+
+  // ============ PROFILE SETTINGS OPERATIONS ============
+
+  getProfileSettings(profileId) {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM profile_settings WHERE profile_id = ?
+      `);
+      let settings = stmt.get(profileId);
+
+      // If no settings exist for this profile, create default ones
+      if (!settings) {
+        const insertStmt = this.db.prepare(`
+          INSERT INTO profile_settings (profile_id, include_subfolders)
+          VALUES (?, 1)
+        `);
+        insertStmt.run(profileId);
+        settings = stmt.get(profileId);
+      }
+
+      return settings;
+    } catch (error) {
+      console.error('Get profile settings error:', error);
+      return null;
+    }
+  }
+
+  updateProfileSettings(profileId, includeSubfolders) {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE profile_settings
+        SET include_subfolders = ?
+        WHERE profile_id = ?
+      `);
+      const result = stmt.run(includeSubfolders ? 1 : 0, profileId);
+
+      // If no row was updated, insert new settings
+      if (result.changes === 0) {
+        const insertStmt = this.db.prepare(`
+          INSERT INTO profile_settings (profile_id, include_subfolders)
+          VALUES (?, ?)
+        `);
+        insertStmt.run(profileId, includeSubfolders ? 1 : 0);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Update profile settings error:', error);
+      return { success: false, message: error.message };
     }
   }
 

@@ -208,9 +208,9 @@ class Main {
 
     // ============ FILE SCANNING HANDLERS ============
 
-    ipcMain.handle('files:scan', async (event, { scanPath, extensions, mode }) => {
+    ipcMain.handle('files:scan', async (event, { scanPath, extensions, mode, includeSubfolders }) => {
       try {
-        const result = await this.fileScanner.scanDirectory(scanPath, extensions, mode);
+        const result = await this.fileScanner.scanDirectory(scanPath, extensions, mode, includeSubfolders);
         return result;
       } catch (error) {
         console.error('Scan files error:', error);
@@ -357,6 +357,26 @@ class Main {
         return this.database.updateSavedPath(id, name);
       } catch (error) {
         console.error('Update saved path error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    // ============ PROFILE SETTINGS HANDLERS ============
+
+    ipcMain.handle('profileSettings:get', async (event, profileId) => {
+      try {
+        return this.database.getProfileSettings(profileId);
+      } catch (error) {
+        console.error('Get profile settings error:', error);
+        return null;
+      }
+    });
+
+    ipcMain.handle('profileSettings:update', async (event, { profileId, includeSubfolders }) => {
+      try {
+        return this.database.updateProfileSettings(profileId, includeSubfolders);
+      } catch (error) {
+        console.error('Update profile settings error:', error);
         return { success: false, message: error.message };
       }
     });

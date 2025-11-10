@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![Version](https://img.shields.io/badge/Version-1.1.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![Version](https://img.shields.io/badge/Version-1.2.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
@@ -29,6 +29,7 @@
 ### ✨ Key Features
 
 - 🔍 **Smart File Scanning** - Scan directories by file extensions with include/exclude modes
+- 📁 **Recursive Scanning Control** - Choose to scan only current folder or include all subfolders
 - 💾 **Saved Paths System** - Save and quickly access frequently used directory paths
 - 🗑️ **All Files Mode** - Delete all files in a directory regardless of extension
 - ☑️ **File Selection** - Select specific files with checkboxes before deletion
@@ -97,8 +98,8 @@ We're working on obtaining a code signing certificate to eliminate this warning 
 #### For Users
 
 1. Download the latest release for your platform:
-   - **Windows**: `FnF Delete Setup 1.1.0.exe`
-   - **Linux**: `FnF-Delete-1.1.0.AppImage` (Universal) or `fnf-delete_1.1.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.2.0.exe`
+   - **Linux**: `FnF-Delete-1.2.0.AppImage` (Universal) or `fnf-delete_1.2.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Coming soon!
 
 2. Install and run the application
@@ -171,6 +172,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### ✨ Özellikler
 
 - 🔍 **Akıllı Dosya Tarama** - Dahil etme/hariç tutma modları ile uzantılara göre klasör tarama
+- 📁 **Özyinelemeli Tarama Kontrolü** - Sadece mevcut klasörü veya tüm alt klasörleri taramayı seçin
 - 💾 **Kaydedilmiş Yollar Sistemi** - Sık kullanılan dizin yollarını kaydedin ve hızlıca erişin
 - 🗑️ **Tüm Dosyalar Modu** - Uzantıdan bağımsız olarak bir dizindeki tüm dosyaları silin
 - ☑️ **Dosya Seçimi** - Silmeden önce onay kutuları ile belirli dosyaları seçin
@@ -239,8 +241,8 @@ Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifik
 #### Kullanıcılar İçin
 
 1. Platformunuz için en son sürümü indirin:
-   - **Windows**: `FnF Delete Setup 1.1.0.exe`
-   - **Linux**: `FnF-Delete-1.1.0.AppImage` (Evrensel) veya `fnf-delete_1.1.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.2.0.exe`
+   - **Linux**: `FnF-Delete-1.2.0.AppImage` (Evrensel) veya `fnf-delete_1.2.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın

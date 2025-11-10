@@ -29,8 +29,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('profile:update', { id, name, avatarColor }),
 
   // File operations
-  scanFiles: (scanPath, extensions, mode) =>
-    ipcRenderer.invoke('files:scan', { scanPath, extensions, mode }),
+  scanFiles: (scanPath, extensions, mode, includeSubfolders) =>
+    ipcRenderer.invoke('files:scan', { scanPath, extensions, mode, includeSubfolders }),
 
   moveToTrash: (filePaths) =>
     ipcRenderer.invoke('files:moveToTrash', { filePaths }),
@@ -64,4 +64,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   updateSavedPath: (id, name) =>
     ipcRenderer.invoke('savedPath:update', { id, name }),
+
+  // Profile Settings operations
+  getProfileSettings: (profileId) =>
+    ipcRenderer.invoke('profileSettings:get', profileId),
+
+  updateProfileSettings: (profileId, includeSubfolders) =>
+    ipcRenderer.invoke('profileSettings:update', { profileId, includeSubfolders }),
 });

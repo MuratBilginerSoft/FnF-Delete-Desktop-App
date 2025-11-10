@@ -25,12 +25,14 @@ export default function FileDeletion() {
   const [showSavedPaths, setShowSavedPaths] = useState(true);
   const [showDeletePathModal, setShowDeletePathModal] = useState(false);
   const [pathToDelete, setPathToDelete] = useState(null);
+  const [includeSubfolders, setIncludeSubfolders] = useState(true);
 
   const previewRef = useRef(null);
 
-  // Load saved paths on component mount
+  // Load saved paths and settings on component mount
   useEffect(() => {
     loadSavedPaths();
+    loadProfileSettings();
   }, [currentProfile]);
 
   const loadSavedPaths = async () => {
@@ -40,6 +42,18 @@ export default function FileDeletion() {
       setSavedPaths(paths);
     } catch (error) {
       console.error('Load saved paths error:', error);
+    }
+  };
+
+  const loadProfileSettings = async () => {
+    if (!currentProfile) return;
+    try {
+      const settings = await window.electronAPI.getProfileSettings(currentProfile.id);
+      if (settings) {
+        setIncludeSubfolders(settings.include_subfolders === 1);
+      }
+    } catch (error) {
+      console.error('Load profile settings error:', error);
     }
   };
 
@@ -211,6 +225,19 @@ export default function FileDeletion() {
       .reduce((sum, file) => sum + file.size, 0);
   };
 
+  const handleToggleSubfolders = async (newValue) => {
+    setIncludeSubfolders(newValue);
+
+    // Save to database
+    if (currentProfile) {
+      try {
+        await window.electronAPI.updateProfileSettings(currentProfile.id, newValue);
+      } catch (error) {
+        console.error('Update profile settings error:', error);
+      }
+    }
+  };
+
   const handleScan = async () => {
     if (!scanPath.trim()) {
       setNotification({ show: true, type: 'error', message: t('delete.pathPlaceholder') });
@@ -231,12 +258,19 @@ export default function FileDeletion() {
       const result = await window.electronAPI.scanFiles(
         scanPath,
         extensions,
-        mode
+        mode,
+        includeSubfolders
       );
 
       if (result.success) {
         setScannedFiles(result.files);
         setTotalSize(result.totalSize);
+
+        // Check if no files were found
+        if (result.files.length === 0) {
+          setNotification({ show: true, type: 'info', message: t('delete.noFiles') });
+          return;
+        }
 
         // Select all files by default
         const allFilePaths = new Set(result.files.map(f => f.path));
@@ -323,7 +357,7 @@ export default function FileDeletion() {
     <div className="file-deletion">
       <div className="deletion-container">
         {/* Mode Selector - Moved to Top */}
-        <div className="mode-selector-section card">
+        <div className="deletion-mode-section card">
           <label className="mode-selector-label">{t('delete.mode')}</label>
           <div className="mode-selector-grid">
             <button
@@ -400,6 +434,20 @@ export default function FileDeletion() {
                   onChange={(e) => setScanPath(e.target.value)}
                   placeholder={t('delete.pathPlaceholder')}
                 />
+                <button
+                  className="input-icon-btn browse-btn"
+                  onClick={handleBrowse}
+                  title={t('delete.browse')}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                    />
+                  </svg>
+                </button>
                 {scanPath && (
                   <button
                     className="input-icon-btn clear-btn"
@@ -431,17 +479,6 @@ export default function FileDeletion() {
                   />
                 </svg>
               </button>
-              <button className="btn btn-secondary" onClick={handleBrowse}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                  />
-                </svg>
-                {t('delete.browse')}
-              </button>
               <button
                 className="btn btn-secondary save-path-btn"
                 onClick={handleSavePath}
@@ -456,6 +493,39 @@ export default function FileDeletion() {
                     d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
                   />
                 </svg>
+              </button>
+              <label className="compact-checkbox-label" title={t('delete.includeSubfoldersDesc')}>
+                <input
+                  type="checkbox"
+                  checked={includeSubfolders}
+                  onChange={(e) => handleToggleSubfolders(e.target.checked)}
+                  className="compact-checkbox"
+                />
+                <span className="compact-checkbox-text">{t('delete.includeSubfolders')}</span>
+              </label>
+              <button
+                className="btn btn-primary scan-btn-inline"
+                onClick={handleScan}
+                disabled={scanning || !scanPath.trim() || (mode !== 'all' && !extensions.trim())}
+              >
+                {scanning ? (
+                  <>
+                    <div className="spinner"></div>
+                    {t('delete.scanning')}
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    {t('delete.scan')}
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -686,31 +756,6 @@ export default function FileDeletion() {
               </div>
             </div>
           </div>
-
-          <button
-            className="btn btn-primary scan-btn"
-            onClick={handleScan}
-            disabled={scanning || !scanPath.trim() || (mode !== 'all' && !extensions.trim())}
-          >
-            {scanning ? (
-              <>
-                <div className="spinner"></div>
-                {t('delete.scanning')}
-              </>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                {t('delete.scan')}
-              </>
-            )}
-          </button>
         </div>
 
         {/* Preview Section */}
@@ -1086,6 +1131,15 @@ export default function FileDeletion() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
+              ) : notification.type === 'info' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
               ) : (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48">
                   <path
@@ -1097,7 +1151,13 @@ export default function FileDeletion() {
                 </svg>
               )}
             </div>
-            <h3>{notification.type === 'success' ? t('common.success') : t('common.error')}</h3>
+            <h3>
+              {notification.type === 'success'
+                ? t('common.success')
+                : notification.type === 'info'
+                ? t('common.info')
+                : t('common.error')}
+            </h3>
             <p>{notification.message}</p>
             <button className="btn btn-primary" onClick={() => setNotification({ show: false, type: '', message: '' })}>
               {t('common.close')}

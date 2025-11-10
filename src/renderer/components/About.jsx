@@ -95,7 +95,7 @@ export default function About() {
           <span className="gradient-text">FnF Delete</span>
         </h1>
         <p className="about-subtitle">{t('about.subtitle')}</p>
-        <p className="about-version">v1.1.0</p>
+        <p className="about-version">v1.2.0</p>
       </div>
 
       {/* Description */}
