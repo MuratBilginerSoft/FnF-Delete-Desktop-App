@@ -5,13 +5,13 @@
 
 # FnF Delete
 
-### 🗑️ Professional File & Folder Deletion Manager
+### 🗑️ Professional File Deletion Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![Version](https://img.shields.io/badge/Version-1.2.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![Version](https://img.shields.io/badge/Version-1.3.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
@@ -24,7 +24,7 @@
 
 ### 📖 Overview
 
-**FnF Delete** is a powerful desktop application that helps you efficiently manage and delete files and folders on your system. With advanced scanning capabilities, detailed statistics, and an intuitive user interface, file management has never been easier.
+**FnF Delete** is a powerful desktop application that helps you efficiently manage and delete files on your system. With advanced scanning capabilities, detailed statistics, and an intuitive user interface, file management has never been easier.
 
 ### ✨ Key Features
 
@@ -35,6 +35,7 @@
 - ☑️ **File Selection** - Select specific files with checkboxes before deletion
 - 📊 **Detailed Statistics** - Track all your deletion operations with comprehensive analytics
 - 👥 **Multi-Profile Support** - Create separate profiles for different users or projects
+- 🔄 **Auto-Update System** - Automatic update detection and one-click installation
 - 🎨 **Modern UI Design** - Beautiful UEFA Champions League-inspired color scheme
 - 🌓 **Dark/Light Themes** - Switch between themes for comfortable usage
 - 🌍 **Bilingual Interface** - Full support for Turkish and English languages
@@ -98,8 +99,8 @@ We're working on obtaining a code signing certificate to eliminate this warning 
 #### For Users
 
 1. Download the latest release for your platform:
-   - **Windows**: `FnF Delete Setup 1.2.0.exe`
-   - **Linux**: `FnF-Delete-1.2.0.AppImage` (Universal) or `fnf-delete_1.2.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.3.0.exe`
+   - **Linux**: `FnF-Delete-1.3.0.AppImage` (Universal) or `fnf-delete_1.3.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Coming soon!
 
 2. Install and run the application
@@ -167,7 +168,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 📖 Genel Bakış
 
-**FnF Delete**, sisteminizdeki dosya ve klasörleri verimli bir şekilde yönetmenize ve silmenize yardımcı olan güçlü bir masaüstü uygulamasıdır. Gelişmiş tarama özellikleri, detaylı istatistikler ve sezgisel kullanıcı arayüzü ile dosya yönetimi hiç bu kadar kolay olmamıştı.
+**FnF Delete**, sisteminizdeki dosyaları verimli bir şekilde yönetmenize ve silmenize yardımcı olan güçlü bir masaüstü uygulamasıdır. Gelişmiş tarama özellikleri, detaylı istatistikler ve sezgisel kullanıcı arayüzü ile dosya yönetimi hiç bu kadar kolay olmamıştı.
 
 ### ✨ Özellikler
 
@@ -178,6 +179,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ☑️ **Dosya Seçimi** - Silmeden önce onay kutuları ile belirli dosyaları seçin
 - 📊 **Detaylı İstatistikler** - Kapsamlı analizlerle tüm silme işlemlerinizi takip edin
 - 👥 **Çoklu Profil Desteği** - Farklı kullanıcılar veya projeler için ayrı profiller oluşturun
+- 🔄 **Otomatik Güncelleme Sistemi** - Otomatik güncelleme algılama ve tek tıkla kurulum
 - 🎨 **Modern Arayüz Tasarımı** - UEFA Şampiyonlar Ligi'nden ilham alan güzel renk şeması
 - 🌓 **Koyu/Açık Temalar** - Rahat kullanım için temalar arasında geçiş yapın
 - 🌍 **İki Dilli Arayüz** - Türkçe ve İngilizce tam desteği
@@ -241,8 +243,8 @@ Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifik
 #### Kullanıcılar İçin
 
 1. Platformunuz için en son sürümü indirin:
-   - **Windows**: `FnF Delete Setup 1.2.0.exe`
-   - **Linux**: `FnF-Delete-1.2.0.AppImage` (Evrensel) veya `fnf-delete_1.2.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.3.0.exe`
+   - **Linux**: `FnF-Delete-1.3.0.AppImage` (Evrensel) veya `fnf-delete_1.3.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın

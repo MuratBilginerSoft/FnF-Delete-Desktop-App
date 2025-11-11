@@ -5,6 +5,40 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-27
+
+### Added
+
+#### Auto-Update System
+- Automatic update detection on app startup
+- GitHub Releases integration for update distribution
+- Beautiful UEFA-themed update notification modal
+- Real-time download progress tracking with percentage and file size
+- One-click install and restart functionality
+- Release notes display in update modal
+- Error handling for update failures
+- Background download option
+- Multi-language support for update notifications (Turkish & English)
+- Production-only update checks with 5-second startup delay
+- Lazy loading pattern for electron-updater to prevent initialization issues
+
+### Changed
+- Updated app version from 1.2.0 to 1.3.0
+- Enhanced About page with v1.3.0 version display
+- Updated in-app changelog with auto-update feature details
+- Improved README with auto-update feature documentation
+- Corrected app descriptions from "File & Folder" to "File" for accuracy
+
+### Technical
+- Added electron-updater package (v6.6.2)
+- Implemented IPC handlers for update operations (check, download, install)
+- Added UpdateNotification React component with state management
+- Created glassmorphism-styled update modal with animations
+- Extended preload API with updater event listeners
+- Added update-related translations to LanguageContext
+- Implemented automatic version management system (getAppVersion API)
+- Version numbers now automatically sync from package.json across all components
+
 ## [1.2.0] - 2025-01-26
 
 ### Added
