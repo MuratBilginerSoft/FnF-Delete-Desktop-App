@@ -174,6 +174,28 @@ const translations = {
     'changelog.v1.1.stats.dynamic': 'Dinamik seçili dosya istatistikleri',
     'changelog.v1.1.stats.realtime': 'Anlık dosya sayısı ve boyut gösterimi',
 
+    // Update System
+    'update.available': 'Yeni Versiyon Mevcut!',
+    'update.downloading': 'Güncelleme İndiriliyor...',
+    'update.readyToInstall': 'Güncelleme Hazır!',
+    'update.error': 'Güncelleme Hatası',
+    'update.currentVersion': 'Mevcut Versiyon',
+    'update.newVersion': 'Yeni Versiyon',
+    'update.releaseNotes': 'Yenilikler',
+    'update.downloadNow': 'Şimdi Güncelle',
+    'update.later': 'Daha Sonra',
+    'update.runInBackground': 'Arka Planda Çalıştır',
+    'update.installNow': 'Yükle ve Yeniden Başlat',
+    'update.installLater': 'Daha Sonra Yükle',
+    'update.errorMessage': 'Güncelleme kontrol edilirken bir hata oluştu',
+
+    // v1.3.0 Changelog
+    'changelog.v1.3.autoupdate.check': 'Otomatik güncelleme kontrolü sistemi',
+    'changelog.v1.3.autoupdate.github': 'GitHub Releases entegrasyonu',
+    'changelog.v1.3.autoupdate.notification': 'Güncelleme bildirim modalı',
+    'changelog.v1.3.autoupdate.progress': 'Gerçek zamanlı indirme ilerleme takibi',
+    'changelog.v1.3.autoupdate.install': 'Tek tıkla yükle ve yeniden başlat',
+
     // Common
     'common.close': 'Kapat',
     'common.confirm': 'Onayla',
@@ -374,6 +396,28 @@ const translations = {
     'changelog.v1.1.selection.smart': 'Delete only selected files',
     'changelog.v1.1.stats.dynamic': 'Dynamic selected files statistics',
     'changelog.v1.1.stats.realtime': 'Real-time file count and size display',
+
+    // Update System
+    'update.available': 'New Version Available!',
+    'update.downloading': 'Downloading Update...',
+    'update.readyToInstall': 'Update Ready!',
+    'update.error': 'Update Error',
+    'update.currentVersion': 'Current Version',
+    'update.newVersion': 'New Version',
+    'update.releaseNotes': 'What\'s New',
+    'update.downloadNow': 'Update Now',
+    'update.later': 'Later',
+    'update.runInBackground': 'Run in Background',
+    'update.installNow': 'Install and Restart',
+    'update.installLater': 'Install Later',
+    'update.errorMessage': 'An error occurred while checking for updates',
+
+    // v1.3.0 Changelog
+    'changelog.v1.3.autoupdate.check': 'Automatic update check system',
+    'changelog.v1.3.autoupdate.github': 'GitHub Releases integration',
+    'changelog.v1.3.autoupdate.notification': 'Update notification modal',
+    'changelog.v1.3.autoupdate.progress': 'Real-time download progress tracking',
+    'changelog.v1.3.autoupdate.install': 'One-click install and restart',
 
     // Common
     'common.close': 'Close',

@@ -231,15 +231,23 @@
       </div>
     </div>
     <h1 class="app-name">FnF Delete</h1>
-    <p class="app-tagline">File & Folder Deletion Manager</p>
+    <p class="app-tagline">File Deletion Manager</p>
     <div class="loading">
       <div class="loading-bar"></div>
     </div>
-    <p class="version">v1.0.0</p>
+    <p class="version" id="app-version">v1.3.0</p>
     <div class="brand">
       <p class="brand-label">by</p>
       <p class="brand-name">Brainy Tech Solutions</p>
     </div>
   </div>
+
+  <script>
+    // Automatically load version from package.json via electronAPI
+    if (window.electronAPI && window.electronAPI.getAppVersion) {
+      const version = window.electronAPI.getAppVersion();
+      document.getElementById('app-version').textContent = 'v' + version;
+    }
+  </script>
 </body>
 </html>

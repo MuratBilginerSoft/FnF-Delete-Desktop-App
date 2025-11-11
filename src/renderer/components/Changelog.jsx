@@ -6,6 +6,23 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.3.0',
+      date: '2025-01-27',
+      type: 'minor',
+      changes: [
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.3.autoupdate.check',
+            'changelog.v1.3.autoupdate.github',
+            'changelog.v1.3.autoupdate.notification',
+            'changelog.v1.3.autoupdate.progress',
+            'changelog.v1.3.autoupdate.install',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.2.0',
       date: '2025-01-26',
       type: 'minor',

@@ -1,8 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const packageJson = require('../../package.json');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
+  // App info
+  getAppVersion: () => packageJson.version,
+
   // Window controls
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
@@ -71,4 +75,29 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   updateProfileSettings: (profileId, includeSubfolders) =>
     ipcRenderer.invoke('profileSettings:update', { profileId, includeSubfolders }),
+
+  // Auto Updater operations
+  checkForUpdates: () =>
+    ipcRenderer.invoke('updater:checkForUpdates'),
+
+  downloadUpdate: () =>
+    ipcRenderer.invoke('updater:downloadUpdate'),
+
+  installUpdate: () =>
+    ipcRenderer.invoke('updater:installUpdate'),
+
+  onUpdateAvailable: (callback) =>
+    ipcRenderer.on('update-available', (_event, data) => callback(data)),
+
+  onUpdateNotAvailable: (callback) =>
+    ipcRenderer.on('update-not-available', () => callback()),
+
+  onDownloadProgress: (callback) =>
+    ipcRenderer.on('download-progress', (_event, data) => callback(data)),
+
+  onUpdateDownloaded: (callback) =>
+    ipcRenderer.on('update-downloaded', (_event, data) => callback(data)),
+
+  onUpdateError: (callback) =>
+    ipcRenderer.on('update-error', (_event, data) => callback(data)),
 });

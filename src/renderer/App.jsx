@@ -2,6 +2,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import ProfileSelection from './components/ProfileSelection';
 import MainApp from './components/MainApp';
+import UpdateNotification from './components/UpdateNotification';
 import useProfileStore from './store/useProfileStore';
 import './styles/App.css';
 
@@ -24,6 +25,7 @@ function App() {
         ) : (
           <MainApp onLogout={handleLogout} />
         )}
+        <UpdateNotification />
       </LanguageProvider>
     </ThemeProvider>
   );

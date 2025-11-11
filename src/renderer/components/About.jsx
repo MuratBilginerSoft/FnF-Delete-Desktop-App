@@ -7,6 +7,7 @@ import './About.css';
 export default function About() {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const appVersion = window.electronAPI?.getAppVersion() || '1.0.0';
 
   const features = [
     {
@@ -95,7 +96,7 @@ export default function About() {
           <span className="gradient-text">FnF Delete</span>
         </h1>
         <p className="about-subtitle">{t('about.subtitle')}</p>
-        <p className="about-version">v1.2.0</p>
+        <p className="about-version">v{appVersion}</p>
       </div>
 
       {/* Description */}

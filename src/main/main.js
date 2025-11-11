@@ -3,6 +3,9 @@ const path = require('path');
 const { DatabaseManager } = require('./Database.js');
 const { FileScanner } = require('./FileScanner.js');
 
+// Lazy load autoUpdater to avoid initialization issues
+let autoUpdater;
+
 class Main {
   constructor() {
     this.mainWindow = null;
@@ -22,6 +25,9 @@ class Main {
 
       // Initialize file scanner
       this.fileScanner = new FileScanner();
+
+      // Setup auto updater
+      this.setupAutoUpdater();
 
       // Wait a bit, then create main window
       setTimeout(() => {
@@ -47,6 +53,7 @@ class Main {
       resizable: false,
       skipTaskbar: true,
       webPreferences: {
+        preload: path.join(__dirname, '../preload/preload.js'),
         nodeIntegration: false,
         contextIsolation: true,
       },
@@ -113,6 +120,77 @@ class Main {
     app.on('before-quit', () => {
       if (this.database) {
         this.database.close();
+      }
+    });
+  }
+
+  setupAutoUpdater() {
+    // Lazy load autoUpdater after app is ready
+    if (!autoUpdater) {
+      autoUpdater = require('electron-updater').autoUpdater;
+    }
+
+    // Configure autoUpdater
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    // Check for updates when app is ready (only in production)
+    if (app.isPackaged) {
+      setTimeout(() => {
+        autoUpdater.checkForUpdates().catch(err => {
+          console.error('Auto updater check error:', err);
+        });
+      }, 5000); // Check 5 seconds after startup
+    }
+
+    // Update available
+    autoUpdater.on('update-available', (info) => {
+      console.log('Update available:', info);
+      if (this.mainWindow) {
+        this.mainWindow.webContents.send('update-available', {
+          version: info.version,
+          releaseNotes: info.releaseNotes,
+          releaseDate: info.releaseDate
+        });
+      }
+    });
+
+    // Update not available
+    autoUpdater.on('update-not-available', () => {
+      console.log('Update not available');
+      if (this.mainWindow) {
+        this.mainWindow.webContents.send('update-not-available');
+      }
+    });
+
+    // Download progress
+    autoUpdater.on('download-progress', (progressObj) => {
+      if (this.mainWindow) {
+        this.mainWindow.webContents.send('download-progress', {
+          percent: progressObj.percent,
+          transferred: progressObj.transferred,
+          total: progressObj.total
+        });
+      }
+    });
+
+    // Update downloaded
+    autoUpdater.on('update-downloaded', (info) => {
+      console.log('Update downloaded:', info);
+      if (this.mainWindow) {
+        this.mainWindow.webContents.send('update-downloaded', {
+          version: info.version
+        });
+      }
+    });
+
+    // Error
+    autoUpdater.on('error', (error) => {
+      console.error('Auto updater error:', error);
+      if (this.mainWindow) {
+        this.mainWindow.webContents.send('update-error', {
+          message: error.message
+        });
       }
     });
   }
@@ -377,6 +455,50 @@ class Main {
         return this.database.updateProfileSettings(profileId, includeSubfolders);
       } catch (error) {
         console.error('Update profile settings error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    // ============ AUTO UPDATER HANDLERS ============
+
+    ipcMain.handle('updater:checkForUpdates', async () => {
+      try {
+        if (!app.isPackaged) {
+          return { success: false, message: 'Updates only available in production' };
+        }
+        if (!autoUpdater) {
+          autoUpdater = require('electron-updater').autoUpdater;
+        }
+        await autoUpdater.checkForUpdates();
+        return { success: true };
+      } catch (error) {
+        console.error('Check for updates error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('updater:downloadUpdate', async () => {
+      try {
+        if (!autoUpdater) {
+          autoUpdater = require('electron-updater').autoUpdater;
+        }
+        await autoUpdater.downloadUpdate();
+        return { success: true };
+      } catch (error) {
+        console.error('Download update error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('updater:installUpdate', () => {
+      try {
+        if (!autoUpdater) {
+          autoUpdater = require('electron-updater').autoUpdater;
+        }
+        autoUpdater.quitAndInstall(false, true);
+        return { success: true };
+      } catch (error) {
+        console.error('Install update error:', error);
         return { success: false, message: error.message };
       }
     });

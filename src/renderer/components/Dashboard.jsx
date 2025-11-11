@@ -13,6 +13,7 @@ export default function Dashboard({ onNavigate }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
+  const appVersion = window.electronAPI?.getAppVersion() || '1.0.0';
 
   useEffect(() => {
     if (currentProfile) {
@@ -221,7 +222,7 @@ export default function Dashboard({ onNavigate }) {
             <span className="footer-copyright">© {currentYear}</span>
           </div>
           <div className="footer-right">
-            <span className="footer-version">v1.1.0</span>
+            <span className="footer-version">v{appVersion}</span>
           </div>
         </div>
       </div>
