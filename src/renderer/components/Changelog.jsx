@@ -6,6 +6,42 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.4.0',
+      date: '2025-12-12',
+      type: 'minor',
+      changes: [
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.4.trash.list',
+            'changelog.v1.4.trash.filter',
+            'changelog.v1.4.trash.search',
+            'changelog.v1.4.trash.permanent',
+          ]
+        },
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.4.stats.permanent',
+            'changelog.v1.4.stats.dashboard',
+          ]
+        },
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.4.preview.open',
+          ]
+        },
+        {
+          category: 'improvement',
+          items: [
+            'changelog.v1.4.ui.responsive',
+            'changelog.v1.4.ui.remaining',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.3.0',
       date: '2025-01-27',
       type: 'minor',

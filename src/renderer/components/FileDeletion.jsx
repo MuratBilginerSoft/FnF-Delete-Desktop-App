@@ -27,7 +27,41 @@ export default function FileDeletion() {
   const [pathToDelete, setPathToDelete] = useState(null);
   const [includeSubfolders, setIncludeSubfolders] = useState(true);
 
+  // Trash filter states
+  const [trashSearchQuery, setTrashSearchQuery] = useState('');
+  const [trashExtensionFilter, setTrashExtensionFilter] = useState('all'); // 'all' or specific extension
+  const [availableTrashExtensions, setAvailableTrashExtensions] = useState([]);
+
   const previewRef = useRef(null);
+
+  // Filter trash files based on search and extension
+  const getFilteredTrashFiles = () => {
+    if (mode !== 'trash') return scannedFiles;
+
+    let filtered = scannedFiles;
+
+    // Filter by extension
+    if (trashExtensionFilter !== 'all') {
+      filtered = filtered.filter(file =>
+        file.extension?.toLowerCase() === trashExtensionFilter.toLowerCase()
+      );
+    }
+
+    // Filter by search query
+    if (trashSearchQuery.trim()) {
+      const query = trashSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(file =>
+        file.name?.toLowerCase().includes(query) ||
+        file.extension?.toLowerCase().includes(query) ||
+        file.originalPath?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  };
+
+  const filteredTrashFiles = mode === 'trash' ? getFilteredTrashFiles() : scannedFiles;
+  const displayFiles = mode === 'trash' ? filteredTrashFiles : scannedFiles;
 
   // Load saved paths and settings on component mount
   useEffect(() => {
@@ -210,7 +244,9 @@ export default function FileDeletion() {
   };
 
   const selectAllFiles = () => {
-    const allFilePaths = new Set(scannedFiles.map(f => f.path));
+    // In trash mode with filters, only select visible/filtered files
+    const filesToSelect = mode === 'trash' ? displayFiles : scannedFiles;
+    const allFilePaths = new Set(filesToSelect.map(f => f.path));
     setSelectedFiles(allFilePaths);
   };
 
@@ -345,12 +381,142 @@ export default function FileDeletion() {
     }
   };
 
+  // Scan Recycle Bin / Trash
+  const handleScanTrash = async () => {
+    try {
+      setScanning(true);
+      setScannedFiles([]);
+      setTotalSize(0);
+      setTrashSearchQuery('');
+      setTrashExtensionFilter('all');
+      setAvailableTrashExtensions([]);
+
+      const result = await window.electronAPI.getTrashItems();
+
+      if (result.success) {
+        setScannedFiles(result.files);
+
+        // Extract unique extensions for filter
+        const extensions = [...new Set(result.files
+          .map(f => f.extension?.toLowerCase())
+          .filter(ext => ext && ext.length > 0)
+        )].sort();
+        setAvailableTrashExtensions(extensions);
+        setTotalSize(result.totalSize);
+
+        if (result.files.length === 0) {
+          setNotification({ show: true, type: 'info', message: t('delete.trashEmpty') });
+          return;
+        }
+
+        // Select all files by default
+        const allFilePaths = new Set(result.files.map(f => f.path));
+        setSelectedFiles(allFilePaths);
+
+        // Scroll to preview section
+        setTimeout(() => {
+          if (previewRef.current) {
+            previewRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }, 100);
+      } else {
+        setNotification({ show: true, type: 'error', message: result.message || t('delete.error') });
+      }
+    } catch (error) {
+      console.error('Scan trash error:', error);
+      setNotification({ show: true, type: 'error', message: t('delete.error') });
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  // Permanently delete selected files from trash
+  const handlePermanentDelete = async () => {
+    if (selectedFiles.size === 0) return;
+
+    try {
+      setDeleting(true);
+
+      // Get full file details for selected files (for statistics)
+      const selectedFilesArray = scannedFiles.filter(file => selectedFiles.has(file.path));
+      const profileId = currentProfile?.id;
+
+      const deleteResult = await window.electronAPI.permanentDeleteFromTrash(selectedFilesArray, profileId);
+
+      if (deleteResult.success || deleteResult.deletedCount > 0) {
+        setNotification({
+          show: true,
+          type: 'success',
+          message: t('delete.permanentDeleteSuccess').replace('{count}', deleteResult.deletedCount)
+        });
+
+        // Remove deleted files from the list instead of clearing everything
+        const deletedPaths = new Set(selectedFilesArray.map(f => f.path));
+        const remainingFiles = scannedFiles.filter(file => !deletedPaths.has(file.path));
+
+        if (remainingFiles.length === 0) {
+          // All files deleted - reset everything
+          setScannedFiles([]);
+          setTotalSize(0);
+          setAvailableTrashExtensions([]);
+          setTrashSearchQuery('');
+          setTrashExtensionFilter('all');
+        } else {
+          // Update with remaining files
+          setScannedFiles(remainingFiles);
+
+          // Recalculate total size
+          const newTotalSize = remainingFiles.reduce((sum, file) => sum + (file.size || 0), 0);
+          setTotalSize(newTotalSize);
+
+          // Update available extensions
+          const newExtensions = [...new Set(remainingFiles
+            .map(f => f.extension?.toLowerCase())
+            .filter(ext => ext && ext.length > 0)
+          )].sort();
+          setAvailableTrashExtensions(newExtensions);
+
+          // If current filter extension no longer exists, reset to 'all'
+          if (trashExtensionFilter !== 'all' && !newExtensions.includes(trashExtensionFilter)) {
+            setTrashExtensionFilter('all');
+          }
+        }
+
+        setShowConfirm(false);
+        setSelectedFiles(new Set());
+      } else {
+        setNotification({ show: true, type: 'error', message: deleteResult.message || t('delete.error') });
+      }
+    } catch (error) {
+      console.error('Permanent delete error:', error);
+      setNotification({ show: true, type: 'error', message: t('delete.error') });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const formatBytes = (bytes) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  // Open file with default application
+  const handleOpenFile = async (filePath) => {
+    try {
+      const result = await window.electronAPI.openWithDefault(filePath);
+      if (!result.success) {
+        setNotification({ show: true, type: 'error', message: result.message || t('delete.error') });
+      }
+    } catch (error) {
+      console.error('Open file error:', error);
+      setNotification({ show: true, type: 'error', message: t('delete.error') });
+    }
   };
 
   return (
@@ -419,10 +585,31 @@ export default function FileDeletion() {
                 <p>{t('delete.modeAllDesc')}</p>
               </div>
             </button>
+
+            <button
+              className={`mode-btn-card ${mode === 'trash' ? 'active' : ''}`}
+              onClick={() => setMode('trash')}
+            >
+              <div className="mode-btn-icon trash-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <div className="mode-btn-content">
+                <h3>{t('delete.modeTrash')}</h3>
+                <p>{t('delete.modeTrashDesc')}</p>
+              </div>
+            </button>
           </div>
         </div>
 
-        {/* Configuration Section */}
+        {/* Configuration Section - Hidden in Trash Mode */}
+        {mode !== 'trash' && (
         <div className="config-section card">
           <div className="form-group">
             <label>{t('delete.scanPath')}</label>
@@ -503,30 +690,6 @@ export default function FileDeletion() {
                 />
                 <span className="compact-checkbox-text">{t('delete.includeSubfolders')}</span>
               </label>
-              <button
-                className="btn btn-primary scan-btn-inline"
-                onClick={handleScan}
-                disabled={scanning || !scanPath.trim() || (mode !== 'all' && !extensions.trim())}
-              >
-                {scanning ? (
-                  <>
-                    <div className="spinner"></div>
-                    {t('delete.scanning')}
-                  </>
-                ) : (
-                  <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    {t('delete.scan')}
-                  </>
-                )}
-              </button>
             </div>
           </div>
 
@@ -756,7 +919,184 @@ export default function FileDeletion() {
               </div>
             </div>
           </div>
+
+          {/* Scan Action */}
+          <div className="scan-action-section">
+            <button
+              className="btn btn-primary scan-btn-full"
+              onClick={handleScan}
+              disabled={scanning || !scanPath.trim() || (mode !== 'all' && !extensions.trim())}
+            >
+              {scanning ? (
+                <>
+                  <div className="spinner"></div>
+                  {t('delete.scanning')}
+                </>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  {t('delete.scan')}
+                </>
+              )}
+            </button>
+          </div>
         </div>
+        )}
+
+        {/* Trash Mode Section */}
+        {mode === 'trash' && (
+          <div className="trash-mode-section card">
+            <div className="trash-info">
+              <div className="trash-icon-large">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <div className="trash-info-text">
+                <h3>{t('delete.trashTitle')}</h3>
+                <p>{t('delete.trashDescription')}</p>
+              </div>
+            </div>
+            <div className="trash-warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <span>{t('delete.trashWarning')}</span>
+            </div>
+            <div className="scan-action-section">
+              <button
+                className="btn btn-primary scan-btn-full trash-scan-btn"
+                onClick={handleScanTrash}
+                disabled={scanning}
+              >
+                {scanning ? (
+                  <>
+                    <div className="spinner"></div>
+                    {t('delete.scanning')}
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    {t('delete.listTrash')}
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Trash Search & Filter Section */}
+            {scannedFiles.length > 0 && (
+              <div className="trash-filter-section">
+                <div className="trash-search-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder={t('delete.trashSearchPlaceholder')}
+                    value={trashSearchQuery}
+                    onChange={(e) => setTrashSearchQuery(e.target.value)}
+                    className="trash-search-input"
+                  />
+                  {trashSearchQuery && (
+                    <button
+                      className="trash-search-clear"
+                      onClick={() => setTrashSearchQuery('')}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className="trash-extension-filter">
+                  <label>{t('delete.trashFilterByExtension')}</label>
+                  <div className="extension-filter-buttons">
+                    <button
+                      className={`extension-filter-btn ${trashExtensionFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => setTrashExtensionFilter('all')}
+                    >
+                      {t('delete.trashFilterAll')} ({scannedFiles.length})
+                    </button>
+                    {availableTrashExtensions.slice(0, 10).map(ext => {
+                      const count = scannedFiles.filter(f => f.extension?.toLowerCase() === ext).length;
+                      return (
+                        <button
+                          key={ext}
+                          className={`extension-filter-btn ${trashExtensionFilter === ext ? 'active' : ''}`}
+                          onClick={() => setTrashExtensionFilter(ext)}
+                        >
+                          .{ext} ({count})
+                        </button>
+                      );
+                    })}
+                    {availableTrashExtensions.length > 10 && (
+                      <select
+                        className="extension-filter-select"
+                        value={availableTrashExtensions.slice(10).includes(trashExtensionFilter) ? trashExtensionFilter : ''}
+                        onChange={(e) => e.target.value && setTrashExtensionFilter(e.target.value)}
+                      >
+                        <option value="">{t('delete.trashFilterMore')} ({availableTrashExtensions.length - 10})</option>
+                        {availableTrashExtensions.slice(10).map(ext => {
+                          const count = scannedFiles.filter(f => f.extension?.toLowerCase() === ext).length;
+                          return (
+                            <option key={ext} value={ext}>.{ext} ({count})</option>
+                          );
+                        })}
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                {(trashSearchQuery || trashExtensionFilter !== 'all') && (
+                  <div className="trash-filter-status">
+                    <span>
+                      {t('delete.trashFilterResult')}: {filteredTrashFiles.length} / {scannedFiles.length} {t('stats.files')}
+                    </span>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => {
+                        setTrashSearchQuery('');
+                        setTrashExtensionFilter('all');
+                      }}
+                    >
+                      {t('delete.trashFilterClear')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Preview Section */}
         {scannedFiles.length > 0 && (
@@ -779,6 +1119,13 @@ export default function FileDeletion() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         {t('delete.allMode')}
+                      </>
+                    ) : mode === 'trash' ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        {t('delete.trashMode')}
                       </>
                     ) : (
                       <>
@@ -833,7 +1180,7 @@ export default function FileDeletion() {
             </div>
 
             <div className="files-list">
-              {scannedFiles.slice(0, 100).map((file, index) => (
+              {displayFiles.slice(0, 100).map((file, index) => (
                 <div key={index} className="file-item">
                   <input
                     type="checkbox"
@@ -851,7 +1198,11 @@ export default function FileDeletion() {
                       />
                     </svg>
                   </div>
-                  <div className="file-info">
+                  <div
+                    className="file-info file-info-clickable"
+                    onClick={() => handleOpenFile(file.path)}
+                    title={t('delete.openFile')}
+                  >
                     <div className="file-name">{file.name}</div>
                     <div className="file-path">{file.path}</div>
                   </div>
@@ -859,31 +1210,63 @@ export default function FileDeletion() {
                     <span className="file-ext">.{file.extension}</span>
                     <span className="file-size">{formatBytes(file.size)}</span>
                   </div>
+                  <button
+                    className="file-open-btn"
+                    onClick={() => handleOpenFile(file.path)}
+                    title={t('delete.openFile')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))}
-              {scannedFiles.length > 100 && (
+              {displayFiles.length > 100 && (
                 <div className="more-files">
-                  +{scannedFiles.length - 100} {t('stats.files')}
+                  +{displayFiles.length - 100} {t('stats.files')}
                 </div>
               )}
             </div>
 
             <div className="preview-actions">
-              <button
-                className="btn btn-danger"
-                onClick={() => setShowConfirm(true)}
-                disabled={selectedFiles.size === 0}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-                {t('delete.moveToTrash')}
-              </button>
+              {mode === 'trash' ? (
+                <button
+                  className="btn btn-danger permanent-delete-btn"
+                  onClick={() => setShowConfirm(true)}
+                  disabled={selectedFiles.size === 0}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  {t('delete.permanentDelete')}
+                </button>
+              ) : (
+                <button
+                  className="btn btn-danger"
+                  onClick={() => setShowConfirm(true)}
+                  disabled={selectedFiles.size === 0}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  {t('delete.moveToTrash')}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -907,29 +1290,43 @@ export default function FileDeletion() {
       {/* Delete Confirmation Modal */}
       {showConfirm && (
         <div className="confirm-delete-overlay" onClick={() => setShowConfirm(false)}>
-          <div className="confirm-delete-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="confirm-delete-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
+          <div className={`confirm-delete-modal ${mode === 'trash' ? 'permanent-delete-modal' : ''}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`confirm-delete-icon ${mode === 'trash' ? 'permanent-warning' : ''}`}>
+              {mode === 'trash' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              )}
             </div>
-            <h2>{t('delete.confirmTitle')}</h2>
+            <h2>{mode === 'trash' ? t('delete.permanentConfirmTitle') : t('delete.confirmTitle')}</h2>
 
-            <div className="confirm-info-box">
+            <div className={`confirm-info-box ${mode === 'trash' ? 'permanent-warning-box' : ''}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d={mode === 'trash'
+                    ? "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  }
                 />
               </svg>
-              <p>{t('delete.confirmMessage')}</p>
+              <p>{mode === 'trash' ? t('delete.permanentConfirmMessage') : t('delete.confirmMessage')}</p>
             </div>
 
             <div className="confirm-delete-info">
@@ -959,8 +1356,8 @@ export default function FileDeletion() {
                 {t('common.cancel')}
               </button>
               <button
-                className="btn btn-danger"
-                onClick={handleDelete}
+                className={`btn btn-danger ${mode === 'trash' ? 'permanent-delete-confirm-btn' : ''}`}
+                onClick={mode === 'trash' ? handlePermanentDelete : handleDelete}
                 disabled={deleting}
               >
                 {deleting ? (
@@ -975,10 +1372,13 @@ export default function FileDeletion() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        d={mode === 'trash'
+                          ? "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          : "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        }
                       />
                     </svg>
-                    {t('delete.confirmDelete')}
+                    {mode === 'trash' ? t('delete.permanentDeleteConfirm') : t('delete.confirmDelete')}
                   </>
                 )}
               </button>

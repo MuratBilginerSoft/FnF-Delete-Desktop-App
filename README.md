@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![Version](https://img.shields.io/badge/Version-1.3.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![Version](https://img.shields.io/badge/Version-1.4.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
@@ -40,6 +40,8 @@
 - 🌓 **Dark/Light Themes** - Switch between themes for comfortable usage
 - 🌍 **Bilingual Interface** - Full support for Turkish and English languages
 - ♻️ **Safe Deletion** - Files are moved to trash, allowing recovery if needed
+- 🗑️ **Recycle Bin Management** - View, filter, search and permanently delete files from trash
+- 👁️ **File Preview** - Open files with default application before deletion
 - ⚡ **Fast Performance** - Built with Electron and React for optimal speed
 - 💿 **SQLite Database** - Local data storage with better-sqlite3
 
@@ -99,8 +101,8 @@ We're working on obtaining a code signing certificate to eliminate this warning 
 #### For Users
 
 1. Download the latest release for your platform:
-   - **Windows**: `FnF Delete Setup 1.3.0.exe`
-   - **Linux**: `FnF-Delete-1.3.0.AppImage` (Universal) or `fnf-delete_1.3.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.4.0.exe`
+   - **Linux**: `FnF-Delete-1.4.0.AppImage` (Universal) or `fnf-delete_1.4.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Coming soon!
 
 2. Install and run the application
@@ -184,6 +186,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🌓 **Koyu/Açık Temalar** - Rahat kullanım için temalar arasında geçiş yapın
 - 🌍 **İki Dilli Arayüz** - Türkçe ve İngilizce tam desteği
 - ♻️ **Güvenli Silme** - Dosyalar çöp kutusuna taşınır, gerekirse kurtarılabilir
+- 🗑️ **Geri Dönüşüm Kutusu Yönetimi** - Çöp kutusundaki dosyaları görüntüle, filtrele, ara ve kalıcı sil
+- 👁️ **Dosya Önizleme** - Silmeden önce dosyaları varsayılan uygulamayla aç
 - ⚡ **Hızlı Performans** - Optimal hız için Electron ve React ile geliştirilmiştir
 - 💿 **SQLite Veritabanı** - better-sqlite3 ile yerel veri depolama
 
@@ -243,8 +247,8 @@ Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifik
 #### Kullanıcılar İçin
 
 1. Platformunuz için en son sürümü indirin:
-   - **Windows**: `FnF Delete Setup 1.3.0.exe`
-   - **Linux**: `FnF-Delete-1.3.0.AppImage` (Evrensel) veya `fnf-delete_1.3.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.4.0.exe`
+   - **Linux**: `FnF-Delete-1.4.0.AppImage` (Evrensel) veya `fnf-delete_1.4.0_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın
