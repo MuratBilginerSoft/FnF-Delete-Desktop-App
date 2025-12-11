@@ -35,6 +35,8 @@ const translations = {
     'dashboard.stats.filesDeleted': 'Silinen Dosya',
     'dashboard.stats.sizeDeleted': 'Silinen Boyut',
     'dashboard.stats.extensions': 'Farklı Uzantı',
+    'dashboard.stats.permanentFilesDeleted': 'Kalıcı Silinen',
+    'dashboard.stats.permanentSizeDeleted': 'Kalıcı Silinen Boyut',
 
     // File Deletion
     'delete.title': 'Dosya Silme',
@@ -84,6 +86,30 @@ const translations = {
     'delete.selectedSize': 'Seçili Boyut',
     'delete.includeSubfolders': 'Alt klasörleri de tara',
     'delete.includeSubfoldersDesc': 'Seçili klasörün içindeki tüm alt klasörlerdeki dosyalar da taranır',
+
+    // Trash Mode
+    'delete.modeTrash': 'Çöp Kutusu',
+    'delete.modeTrashDesc': 'Geri dönüşüm kutusunu görüntüle ve kalıcı sil',
+    'delete.trashMode': 'Çöp Kutusu',
+    'delete.trashTitle': 'Geri Dönüşüm Kutusu',
+    'delete.trashDescription': 'Geri dönüşüm kutusundaki dosyaları listeleyin ve kalıcı olarak silin.',
+    'delete.trashWarning': 'Kalıcı silinen dosyalar geri getirilemez!',
+    'delete.trashEmpty': 'Geri dönüşüm kutusu boş',
+    'delete.listTrash': 'Çöp Kutusunu Listele',
+    'delete.permanentDelete': 'Kalıcı Olarak Sil',
+    'delete.permanentConfirmTitle': 'Kalıcı Silme Onayı',
+    'delete.permanentConfirmMessage': 'DİKKAT: Seçilen dosyalar kalıcı olarak silinecek. Bu işlem GERİ ALINAMAZ! Dosyalar hiçbir şekilde kurtarılamaz.',
+    'delete.permanentDeleteConfirm': 'Kalıcı Olarak Sil',
+    'delete.permanentDeleteSuccess': '{count} dosya kalıcı olarak silindi',
+    'delete.openFile': 'Dosyayı Aç',
+
+    // Trash Filter
+    'delete.trashSearchPlaceholder': 'Dosya adı veya uzantı ara...',
+    'delete.trashFilterByExtension': 'Uzantıya Göre Filtrele',
+    'delete.trashFilterAll': 'Tümü',
+    'delete.trashFilterMore': 'Diğer',
+    'delete.trashFilterResult': 'Sonuç',
+    'delete.trashFilterClear': 'Filtreleri Temizle',
 
     // Saved Paths
     'savedPaths.title': 'Kaydedilmiş Klasörler',
@@ -196,6 +222,17 @@ const translations = {
     'changelog.v1.3.autoupdate.progress': 'Gerçek zamanlı indirme ilerleme takibi',
     'changelog.v1.3.autoupdate.install': 'Tek tıkla yükle ve yeniden başlat',
 
+    // v1.4.0 Changelog
+    'changelog.v1.4.trash.list': 'Geri dönüşüm kutusu listeleme özelliği',
+    'changelog.v1.4.trash.filter': 'Uzantıya göre filtreleme seçenekleri',
+    'changelog.v1.4.trash.search': 'Dosya adı ve uzantı arama özelliği',
+    'changelog.v1.4.trash.permanent': 'Kalıcı silme işlevi (geri alınamaz)',
+    'changelog.v1.4.stats.permanent': 'Kalıcı silinen dosya istatistikleri takibi',
+    'changelog.v1.4.stats.dashboard': 'Dashboard\'da 6 kartlı istatistik görünümü',
+    'changelog.v1.4.preview.open': 'Dosyaları varsayılan uygulamayla önizleme',
+    'changelog.v1.4.ui.responsive': 'Geliştirilmiş responsive kart düzeni',
+    'changelog.v1.4.ui.remaining': 'Silme sonrası kalan dosya sayısı gösterimi',
+
     // Common
     'common.close': 'Kapat',
     'common.confirm': 'Onayla',
@@ -258,6 +295,8 @@ const translations = {
     'dashboard.stats.filesDeleted': 'Files Deleted',
     'dashboard.stats.sizeDeleted': 'Size Deleted',
     'dashboard.stats.extensions': 'Unique Extensions',
+    'dashboard.stats.permanentFilesDeleted': 'Permanently Deleted',
+    'dashboard.stats.permanentSizeDeleted': 'Permanent Size Deleted',
 
     // File Deletion
     'delete.title': 'File Deletion',
@@ -307,6 +346,30 @@ const translations = {
     'delete.selectedSize': 'Selected Size',
     'delete.includeSubfolders': 'Include Subfolder',
     'delete.includeSubfoldersDesc': 'Also scan files in all subfolders within the selected folder',
+
+    // Trash Mode
+    'delete.modeTrash': 'Recycle Bin',
+    'delete.modeTrashDesc': 'View and permanently delete from recycle bin',
+    'delete.trashMode': 'Recycle Bin',
+    'delete.trashTitle': 'Recycle Bin',
+    'delete.trashDescription': 'List files in recycle bin and permanently delete them.',
+    'delete.trashWarning': 'Permanently deleted files cannot be recovered!',
+    'delete.trashEmpty': 'Recycle bin is empty',
+    'delete.listTrash': 'List Recycle Bin',
+    'delete.permanentDelete': 'Permanently Delete',
+    'delete.permanentConfirmTitle': 'Permanent Deletion Confirmation',
+    'delete.permanentConfirmMessage': 'WARNING: Selected files will be permanently deleted. This action CANNOT BE UNDONE! Files cannot be recovered in any way.',
+    'delete.permanentDeleteConfirm': 'Permanently Delete',
+    'delete.permanentDeleteSuccess': '{count} files permanently deleted',
+    'delete.openFile': 'Open File',
+
+    // Trash Filter
+    'delete.trashSearchPlaceholder': 'Search file name or extension...',
+    'delete.trashFilterByExtension': 'Filter by Extension',
+    'delete.trashFilterAll': 'All',
+    'delete.trashFilterMore': 'More',
+    'delete.trashFilterResult': 'Result',
+    'delete.trashFilterClear': 'Clear Filters',
 
     // Saved Paths
     'savedPaths.title': 'Saved Folders',
@@ -418,6 +481,17 @@ const translations = {
     'changelog.v1.3.autoupdate.notification': 'Update notification modal',
     'changelog.v1.3.autoupdate.progress': 'Real-time download progress tracking',
     'changelog.v1.3.autoupdate.install': 'One-click install and restart',
+
+    // v1.4.0 Changelog
+    'changelog.v1.4.trash.list': 'Recycle bin listing feature',
+    'changelog.v1.4.trash.filter': 'Filter by extension options',
+    'changelog.v1.4.trash.search': 'Search by file name and extension',
+    'changelog.v1.4.trash.permanent': 'Permanent deletion functionality (irreversible)',
+    'changelog.v1.4.stats.permanent': 'Permanently deleted files statistics tracking',
+    'changelog.v1.4.stats.dashboard': '6-card statistics view on Dashboard',
+    'changelog.v1.4.preview.open': 'Preview files with default application',
+    'changelog.v1.4.ui.responsive': 'Improved responsive card layout',
+    'changelog.v1.4.ui.remaining': 'Remaining files count display after deletion',
 
     // Common
     'common.close': 'Close',

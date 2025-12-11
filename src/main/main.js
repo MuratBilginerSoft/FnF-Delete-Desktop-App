@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { DatabaseManager } = require('./Database.js');
 const { FileScanner } = require('./FileScanner.js');
 
@@ -331,6 +332,20 @@ class Main {
       }
     });
 
+    ipcMain.handle('files:openWithDefault', async (event, filePath) => {
+      try {
+        const result = await shell.openPath(filePath);
+        if (result) {
+          // result is empty string on success, error message on failure
+          return { success: false, message: result };
+        }
+        return { success: true };
+      } catch (error) {
+        console.error('Open file error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
     // ============ DELETION OPERATIONS HANDLERS ============
 
     ipcMain.handle('operation:create', async (event, { profileId, scanPath, deletionMode, fileExtensions, filesData }) => {
@@ -499,6 +514,185 @@ class Main {
         return { success: true };
       } catch (error) {
         console.error('Install update error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    // ============ RECYCLE BIN / TRASH HANDLERS ============
+
+    ipcMain.handle('trash:getItems', async () => {
+      try {
+        const { exec } = require('child_process');
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+        const os = require('os');
+
+        // Create temp script file for reliable execution
+        const tempDir = os.tmpdir();
+        const scriptPath = path.join(tempDir, 'fnf-recycle-scan.ps1');
+
+        // PowerShell script to get Recycle Bin contents
+        const psScript = `
+$shell = New-Object -ComObject Shell.Application
+$recycleBin = $shell.NameSpace(10)
+$items = @()
+foreach ($item in $recycleBin.Items()) {
+  $items += [PSCustomObject]@{
+    name = $item.Name
+    path = $item.Path
+    size = $item.ExtendedProperty("Size")
+    type = $item.Type
+    dateDeleted = $item.ExtendedProperty("System.Recycle.DateDeleted")
+    originalPath = $item.ExtendedProperty("System.Recycle.DeletedFrom")
+  }
+}
+$items | ConvertTo-Json -Depth 3 -Compress
+`;
+
+        // Write script to temp file
+        fs.writeFileSync(scriptPath, psScript, 'utf8');
+
+        // Execute the script file
+        const { stdout } = await execPromise(
+          `powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`,
+          { maxBuffer: 50 * 1024 * 1024, timeout: 60000 }
+        );
+
+        // Clean up temp file
+        try { fs.unlinkSync(scriptPath); } catch (e) { /* ignore */ }
+
+        let items = [];
+        if (stdout.trim()) {
+          const parsed = JSON.parse(stdout);
+          // Handle single item (not array) or array
+          items = Array.isArray(parsed) ? parsed : [parsed];
+        }
+
+        // Calculate total size and format items
+        let totalSize = 0;
+        const formattedItems = items.map(item => {
+          const size = parseInt(item.size) || 0;
+          totalSize += size;
+
+          // Extract extension from name
+          const nameParts = item.name.split('.');
+          const extension = nameParts.length > 1 ? nameParts.pop().toLowerCase() : '';
+
+          return {
+            name: item.name,
+            path: item.path,
+            size: size,
+            extension: extension,
+            type: item.type,
+            dateDeleted: item.dateDeleted,
+            originalPath: item.originalPath
+          };
+        });
+
+        return {
+          success: true,
+          files: formattedItems,
+          totalSize: totalSize
+        };
+      } catch (error) {
+        console.error('Get trash items error:', error);
+        return { success: false, message: error.message, files: [], totalSize: 0 };
+      }
+    });
+
+    ipcMain.handle('trash:permanentDelete', async (event, { files, profileId }) => {
+      try {
+        let deletedCount = 0;
+        let totalSize = 0;
+        let errors = [];
+
+        // Create operation record if profileId is provided
+        let operationId = null;
+        if (profileId && this.database) {
+          operationId = this.database.createPermanentDeletionOperation(profileId);
+        }
+
+        for (const file of files) {
+          try {
+            const filePath = file.path || file;
+
+            // Use Node.js fs to delete the file directly from Recycle Bin path
+            // Recycle Bin paths are like C:\$Recycle.Bin\S-1-5-21-xxx\$Rxxx.ext
+            if (fs.existsSync(filePath)) {
+              const stat = fs.statSync(filePath);
+              if (stat.isDirectory()) {
+                // For directories, use recursive delete
+                fs.rmSync(filePath, { recursive: true, force: true });
+              } else {
+                // For files, use unlink
+                fs.unlinkSync(filePath);
+              }
+
+              deletedCount++;
+              const fileSize = file.size || 0;
+              totalSize += fileSize;
+
+              // Record to database if profileId provided
+              if (operationId && this.database) {
+                const fileName = file.name || path.basename(filePath);
+                const fileExtension = file.extension || path.extname(fileName).slice(1).toLowerCase();
+                this.database.addPermanentlyDeletedFile(
+                  operationId,
+                  profileId,
+                  filePath,
+                  fileName,
+                  fileExtension,
+                  fileSize,
+                  file.originalPath || null
+                );
+              }
+            } else {
+              errors.push({ path: filePath, error: 'File not found' });
+            }
+          } catch (err) {
+            errors.push({ path: file.path || file, error: err.message });
+          }
+        }
+
+        // Update operation totals
+        if (operationId && this.database) {
+          this.database.updatePermanentDeletionOperation(operationId, deletedCount, totalSize);
+        }
+
+        return {
+          success: errors.length === 0,
+          deletedCount: deletedCount,
+          totalSize: totalSize,
+          errors: errors,
+          message: errors.length > 0 ? `${deletedCount} files deleted, ${errors.length} errors` : `${deletedCount} files permanently deleted`
+        };
+      } catch (error) {
+        console.error('Permanent delete error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('trash:emptyAll', async (event, { profileId, totalFiles, totalSize }) => {
+      try {
+        const { exec } = require('child_process');
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+
+        // Record statistics before emptying if profileId is provided
+        if (profileId && this.database && totalFiles > 0) {
+          const operationId = this.database.createPermanentDeletionOperation(profileId);
+          this.database.updatePermanentDeletionOperation(operationId, totalFiles, totalSize);
+        }
+
+        // PowerShell command to empty Recycle Bin
+        await execPromise(
+          'powershell -NoProfile -ExecutionPolicy Bypass -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"',
+          { timeout: 60000 }
+        );
+
+        return { success: true, message: 'Recycle Bin emptied successfully', deletedCount: totalFiles, totalSize: totalSize };
+      } catch (error) {
+        console.error('Empty trash error:', error);
         return { success: false, message: error.message };
       }
     });

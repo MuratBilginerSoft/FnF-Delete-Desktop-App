@@ -96,6 +96,35 @@ class DatabaseManager {
       )
     `);
 
+    // Permanent deletions table (for recycle bin emptying)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS permanent_deletions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        profile_id INTEGER NOT NULL,
+        operation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        total_files_deleted INTEGER DEFAULT 0,
+        total_size_bytes INTEGER DEFAULT 0,
+        FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Permanently deleted files details table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS permanently_deleted_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        operation_id INTEGER NOT NULL,
+        profile_id INTEGER NOT NULL,
+        file_path TEXT NOT NULL,
+        file_name TEXT NOT NULL,
+        file_extension TEXT NOT NULL,
+        file_size_bytes INTEGER NOT NULL,
+        original_path TEXT,
+        deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (operation_id) REFERENCES permanent_deletions(id) ON DELETE CASCADE,
+        FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+      )
+    `);
+
     // Create indexes for better performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_profiles_name ON profiles(name);
@@ -107,6 +136,10 @@ class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_deleted_files_extension ON deleted_files(file_extension);
       CREATE INDEX IF NOT EXISTS idx_deleted_files_date ON deleted_files(deleted_at);
       CREATE INDEX IF NOT EXISTS idx_saved_paths_profile ON saved_paths(profile_id);
+      CREATE INDEX IF NOT EXISTS idx_permanent_deletions_profile ON permanent_deletions(profile_id);
+      CREATE INDEX IF NOT EXISTS idx_permanent_deletions_date ON permanent_deletions(operation_date);
+      CREATE INDEX IF NOT EXISTS idx_permanently_deleted_files_operation ON permanently_deleted_files(operation_id);
+      CREATE INDEX IF NOT EXISTS idx_permanently_deleted_files_profile ON permanently_deleted_files(profile_id);
     `);
   }
 
@@ -229,6 +262,47 @@ class DatabaseManager {
     stmt.run(operationId, profileId, filePath, fileName, fileExtension, fileSizeBytes);
   }
 
+  // ============ PERMANENT DELETION OPERATIONS ============
+
+  createPermanentDeletionOperation(profileId) {
+    const stmt = this.db.prepare(`
+      INSERT INTO permanent_deletions (profile_id)
+      VALUES (?)
+    `);
+    const result = stmt.run(profileId);
+    return result.lastInsertRowid;
+  }
+
+  updatePermanentDeletionOperation(operationId, totalFilesDeleted, totalSizeBytes) {
+    const stmt = this.db.prepare(`
+      UPDATE permanent_deletions
+      SET total_files_deleted = ?,
+          total_size_bytes = ?
+      WHERE id = ?
+    `);
+    stmt.run(totalFilesDeleted, totalSizeBytes, operationId);
+  }
+
+  addPermanentlyDeletedFile(operationId, profileId, filePath, fileName, fileExtension, fileSizeBytes, originalPath) {
+    const stmt = this.db.prepare(`
+      INSERT INTO permanently_deleted_files
+      (operation_id, profile_id, file_path, file_name, file_extension, file_size_bytes, original_path)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(operationId, profileId, filePath, fileName, fileExtension, fileSizeBytes, originalPath || null);
+  }
+
+  getPermanentDeletionStats(profileId) {
+    return this.db.prepare(`
+      SELECT
+        COUNT(*) as total_operations,
+        SUM(total_files_deleted) as total_files_deleted,
+        SUM(total_size_bytes) as total_size_deleted
+      FROM permanent_deletions
+      WHERE profile_id = ?
+    `).get(profileId);
+  }
+
   // ============ STATISTICS OPERATIONS ============
 
   getProfileStatistics(profileId) {
@@ -299,15 +373,33 @@ class DatabaseManager {
 
   // Get all-time statistics for dashboard
   getDashboardStats(profileId) {
-    return this.db.prepare(`
+    // Regular deletion stats (to recycle bin)
+    const regularStats = this.db.prepare(`
       SELECT
         COUNT(DISTINCT do.id) as total_operations,
-        SUM(do.total_files_deleted) as total_files_deleted,
-        SUM(do.total_size_bytes) as total_size_deleted,
+        COALESCE(SUM(do.total_files_deleted), 0) as total_files_deleted,
+        COALESCE(SUM(do.total_size_bytes), 0) as total_size_deleted,
         (SELECT COUNT(DISTINCT file_extension) FROM deleted_files WHERE profile_id = ?) as unique_extensions
       FROM deletion_operations do
       WHERE do.profile_id = ?
     `).get(profileId, profileId);
+
+    // Permanent deletion stats (from recycle bin)
+    const permanentStats = this.db.prepare(`
+      SELECT
+        COUNT(*) as total_operations,
+        COALESCE(SUM(total_files_deleted), 0) as total_files_deleted,
+        COALESCE(SUM(total_size_bytes), 0) as total_size_deleted
+      FROM permanent_deletions
+      WHERE profile_id = ?
+    `).get(profileId);
+
+    return {
+      ...regularStats,
+      permanent_operations: permanentStats.total_operations || 0,
+      permanent_files_deleted: permanentStats.total_files_deleted || 0,
+      permanent_size_deleted: permanentStats.total_size_deleted || 0
+    };
   }
 
   // ============ SAVED PATHS OPERATIONS ============

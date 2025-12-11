@@ -42,6 +42,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectFolder: () =>
     ipcRenderer.invoke('files:selectFolder'),
 
+  openWithDefault: (filePath) =>
+    ipcRenderer.invoke('files:openWithDefault', filePath),
+
   // Deletion operations
   createOperation: (profileId, scanPath, deletionMode, fileExtensions, filesData) =>
     ipcRenderer.invoke('operation:create', { profileId, scanPath, deletionMode, fileExtensions, filesData }),
@@ -100,4 +103,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   onUpdateError: (callback) =>
     ipcRenderer.on('update-error', (_event, data) => callback(data)),
+
+  // Recycle Bin / Trash operations
+  getTrashItems: () =>
+    ipcRenderer.invoke('trash:getItems'),
+
+  permanentDeleteFromTrash: (files, profileId) =>
+    ipcRenderer.invoke('trash:permanentDelete', { files, profileId }),
+
+  emptyTrash: (profileId, totalFiles, totalSize) =>
+    ipcRenderer.invoke('trash:emptyAll', { profileId, totalFiles, totalSize }),
 });

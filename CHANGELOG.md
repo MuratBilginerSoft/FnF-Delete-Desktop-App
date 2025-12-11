@@ -5,6 +5,45 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-12
+
+### Added
+
+#### Recycle Bin Management
+- View and list all files in Windows Recycle Bin
+- Filter Recycle Bin contents by file extension
+- Search functionality for file names and extensions
+- Permanent deletion of selected files from Recycle Bin
+- Batch selection with Select All / Deselect All controls
+- Real-time file count and size display
+
+#### Permanent Deletion Statistics
+- Track permanently deleted files separately from trash operations
+- New database tables for permanent deletion records
+- Dashboard displays permanent deletion statistics (file count & size)
+- 6-card statistics layout on Dashboard
+
+#### File Preview Feature
+- Open files with default system application before deletion
+- Clickable file names for quick preview
+- Dedicated open button for each file in the list
+
+### Changed
+- Dashboard now shows 6 stat cards (including permanent deletion stats)
+- Improved responsive grid layout (6→3→2→1 columns based on screen size)
+- Enhanced file list with remaining count display after deletions
+- Updated in-app Changelog with v1.4.0 entries
+
+### Technical
+- Added `permanent_deletions` and `permanently_deleted_files` database tables
+- Implemented `trash:getItems`, `trash:permanentDelete` IPC handlers
+- Added `files:openWithDefault` handler using Electron shell.openPath
+- Extended preload API with Recycle Bin operations
+- Used Node.js fs module for permanent deletion (bypasses Windows confirmation dialogs)
+- Added v1.4.0 translations for Turkish and English
+
+---
+
 ## [1.3.0] - 2025-01-27
 
 ### Added
