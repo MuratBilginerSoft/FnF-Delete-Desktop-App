@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App)
 [![Electron](https://img.shields.io/badge/Electron-Latest-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
-[![Version](https://img.shields.io/badge/Version-1.4.0-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
+[![Version](https://img.shields.io/badge/Version-1.4.1-success)](https://github.com/MuratBilginerSoft/FnF-Delete-Desktop-App/releases)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?logo=virustotal)](https://www.virustotal.com/gui/file/0a8e743991c343a56e57aaa751b09016ae22a4ceebabacecf8efb597e1bbc641/behavior)
 
 **[English](#english)** | **[Türkçe](#türkçe)**
@@ -101,8 +101,8 @@ We're working on obtaining a code signing certificate to eliminate this warning 
 #### For Users
 
 1. Download the latest release for your platform:
-   - **Windows**: `FnF Delete Setup 1.4.0.exe`
-   - **Linux**: `FnF-Delete-1.4.0.AppImage` (Universal) or `fnf-delete_1.4.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.4.1.exe`
+   - **Linux**: `FnF-Delete-1.4.1.AppImage` (Universal) or `fnf-delete_1.4.1_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Coming soon!
 
 2. Install and run the application
@@ -247,8 +247,8 @@ Gelecek sürümlerde bu uyarıyı ortadan kaldırmak için kod imzalama sertifik
 #### Kullanıcılar İçin
 
 1. Platformunuz için en son sürümü indirin:
-   - **Windows**: `FnF Delete Setup 1.4.0.exe`
-   - **Linux**: `FnF-Delete-1.4.0.AppImage` (Evrensel) veya `fnf-delete_1.4.0_amd64.deb` (Debian/Ubuntu)
+   - **Windows**: `FnF Delete Setup 1.4.1.exe`
+   - **Linux**: `FnF-Delete-1.4.1.AppImage` (Evrensel) veya `fnf-delete_1.4.1_amd64.deb` (Debian/Ubuntu)
    - **macOS**: Yakında gelecek!
 
 2. Uygulamayı kurun ve çalıştırın

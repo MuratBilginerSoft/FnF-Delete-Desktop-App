@@ -1,6 +1,6 @@
 {
   "name": "fnf-delete",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "FnF Delete - Professional desktop app for managing file deletion with statistics",
   "main": "src/main/main.js",
   "scripts": {

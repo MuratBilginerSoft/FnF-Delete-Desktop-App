@@ -67,20 +67,41 @@ export default function UpdateNotification() {
   }, []);
 
   const handleDownload = async () => {
+    console.log('Download button clicked');
+    if (!window.electronAPI?.downloadUpdate) {
+      console.error('downloadUpdate API not available');
+      setUpdateState(prev => ({
+        ...prev,
+        status: 'error',
+        error: 'Update API not available'
+      }));
+      return;
+    }
+
     try {
       setUpdateState(prev => ({ ...prev, status: 'downloading', progress: 0 }));
-      await window.electronAPI.downloadUpdate();
+      const result = await window.electronAPI.downloadUpdate();
+      console.log('Download result:', result);
+      if (result && !result.success) {
+        throw new Error(result.message || 'Download failed');
+      }
     } catch (error) {
       console.error('Download error:', error);
       setUpdateState(prev => ({
         ...prev,
         status: 'error',
-        error: error.message
+        error: error.message || 'Download failed'
       }));
     }
   };
 
   const handleInstall = async () => {
+    console.log('Install button clicked');
+    if (!window.electronAPI?.installUpdate) {
+      console.error('installUpdate API not available');
+      return;
+    }
+
     try {
       await window.electronAPI.installUpdate();
     } catch (error) {
@@ -102,11 +123,32 @@ export default function UpdateNotification() {
 
   const parseReleaseNotes = (notes) => {
     if (!notes) return null;
+
+    // If notes is HTML string, strip tags and extract text
     if (typeof notes === 'string') {
-      // Simple parsing - split by newlines and look for bullet points
-      const lines = notes.split('\n').filter(line => line.trim());
-      return lines.map((line, index) => (
-        <li key={index}>{line.replace(/^[-*•]\s*/, '')}</li>
+      // Remove HTML tags and decode entities
+      const stripHtml = (html) => {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      };
+
+      // Extract list items from HTML if present
+      if (notes.includes('<li>')) {
+        const liRegex = /<li[^>]*>(.*?)<\/li>/gi;
+        const matches = [...notes.matchAll(liRegex)];
+        if (matches.length > 0) {
+          return matches.slice(0, 10).map((match, index) => (
+            <li key={index}>{stripHtml(match[1])}</li>
+          ));
+        }
+      }
+
+      // Fallback: split by newlines and filter
+      const cleanText = stripHtml(notes);
+      const lines = cleanText.split('\n').filter(line => line.trim() && line.trim().length > 2);
+      return lines.slice(0, 10).map((line, index) => (
+        <li key={index}>{line.replace(/^[-*•]\s*/, '').trim()}</li>
       ));
     }
     return null;

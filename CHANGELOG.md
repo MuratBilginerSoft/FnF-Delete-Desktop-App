@@ -5,6 +5,23 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-12-12
+
+### Fixed
+
+#### Auto-Update System Improvements
+- Fixed release notes display showing raw HTML tags
+- Improved HTML parsing to extract clean text from GitHub release notes
+- Added defensive checks for update API availability
+- Enhanced button click handlers with console logging for debugging
+- Added cursor pointer and z-index to update modal buttons
+
+### Changed
+- Update notification now properly displays release notes as formatted list
+- Improved error handling in download and install functions
+
+---
+
 ## [1.4.0] - 2025-12-12
 
 ### Added
