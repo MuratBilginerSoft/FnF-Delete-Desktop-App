@@ -6,6 +6,27 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.4.1',
+      date: '2025-12-12',
+      type: 'patch',
+      changes: [
+        {
+          category: 'fix',
+          items: [
+            'changelog.v1.4.1.fix.releasenotes',
+            'changelog.v1.4.1.fix.htmlparsing',
+            'changelog.v1.4.1.fix.buttonhandlers',
+          ]
+        },
+        {
+          category: 'improvement',
+          items: [
+            'changelog.v1.4.1.improve.errorhandling',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.4.0',
       date: '2025-12-12',
       type: 'minor',

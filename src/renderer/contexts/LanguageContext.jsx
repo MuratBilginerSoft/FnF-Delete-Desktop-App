@@ -222,6 +222,12 @@ const translations = {
     'changelog.v1.3.autoupdate.progress': 'Gerçek zamanlı indirme ilerleme takibi',
     'changelog.v1.3.autoupdate.install': 'Tek tıkla yükle ve yeniden başlat',
 
+    // v1.4.1 Changelog
+    'changelog.v1.4.1.fix.releasenotes': 'Güncelleme notlarında HTML etiketlerinin görünme sorunu düzeltildi',
+    'changelog.v1.4.1.fix.htmlparsing': 'GitHub release notları için HTML ayrıştırma iyileştirildi',
+    'changelog.v1.4.1.fix.buttonhandlers': 'Güncelleme modalı buton tıklama sorunları giderildi',
+    'changelog.v1.4.1.improve.errorhandling': 'İndirme ve kurulum fonksiyonlarında hata yakalama geliştirildi',
+
     // v1.4.0 Changelog
     'changelog.v1.4.trash.list': 'Geri dönüşüm kutusu listeleme özelliği',
     'changelog.v1.4.trash.filter': 'Uzantıya göre filtreleme seçenekleri',
@@ -481,6 +487,12 @@ const translations = {
     'changelog.v1.3.autoupdate.notification': 'Update notification modal',
     'changelog.v1.3.autoupdate.progress': 'Real-time download progress tracking',
     'changelog.v1.3.autoupdate.install': 'One-click install and restart',
+
+    // v1.4.1 Changelog
+    'changelog.v1.4.1.fix.releasenotes': 'Fixed release notes displaying raw HTML tags',
+    'changelog.v1.4.1.fix.htmlparsing': 'Improved HTML parsing for GitHub release notes',
+    'changelog.v1.4.1.fix.buttonhandlers': 'Fixed update modal button click issues',
+    'changelog.v1.4.1.improve.errorhandling': 'Enhanced error handling in download and install functions',
 
     // v1.4.0 Changelog
     'changelog.v1.4.trash.list': 'Recycle bin listing feature',
