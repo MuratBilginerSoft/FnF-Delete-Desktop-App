@@ -5,6 +5,7 @@ import useProfileStore from '../store/useProfileStore';
 import Dashboard from './Dashboard';
 import FileDeletion from './FileDeletion';
 import Statistics from './Statistics';
+import DeleteJobs from './DeleteJobs/DeleteJobs';
 import Changelog from './Changelog';
 import About from './About';
 import './MainApp.css';
@@ -47,6 +48,8 @@ export default function MainApp({ onLogout }) {
         return <FileDeletion />;
       case 'statistics':
         return <Statistics />;
+      case 'jobs':
+        return <DeleteJobs />;
       case 'changelog':
         return <Changelog />;
       case 'about':
@@ -166,6 +169,21 @@ export default function MainApp({ onLogout }) {
               />
             </svg>
             {t('nav.statistics')}
+          </button>
+
+          <button
+            className={`nav-item ${currentPage === 'jobs' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('jobs')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            {t('nav.jobs')}
           </button>
         </nav>
 

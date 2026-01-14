@@ -113,4 +113,52 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   emptyTrash: (profileId, totalFiles, totalSize) =>
     ipcRenderer.invoke('trash:emptyAll', { profileId, totalFiles, totalSize }),
+
+  // Delete Jobs operations
+  createJob: (profileId, jobData) =>
+    ipcRenderer.invoke('job:create', { profileId, jobData }),
+
+  getAllJobs: (profileId) =>
+    ipcRenderer.invoke('job:getAll', profileId),
+
+  getJob: (jobId) =>
+    ipcRenderer.invoke('job:get', jobId),
+
+  updateJob: (jobId, jobData) =>
+    ipcRenderer.invoke('job:update', { jobId, jobData }),
+
+  deleteJob: (jobId) =>
+    ipcRenderer.invoke('job:delete', jobId),
+
+  toggleJobActive: (jobId, isActive) =>
+    ipcRenderer.invoke('job:toggleActive', { jobId, isActive }),
+
+  runJobNow: (jobId) =>
+    ipcRenderer.invoke('job:runNow', jobId),
+
+  getJobHistory: (jobId, limit = 20) =>
+    ipcRenderer.invoke('job:getHistory', { jobId, limit }),
+
+  getJobExecutionDetails: (executionId) =>
+    ipcRenderer.invoke('job:getExecutionDetails', executionId),
+
+  getJobCount: (profileId) =>
+    ipcRenderer.invoke('job:getCount', profileId),
+
+  // Job execution events
+  onJobExecuted: (callback) =>
+    ipcRenderer.on('job-executed', (_event, data) => callback(data)),
+
+  // Premium operations
+  getPremiumStatus: (profileId) =>
+    ipcRenderer.invoke('premium:getStatus', profileId),
+
+  activatePremium: (profileId, licenseData) =>
+    ipcRenderer.invoke('premium:activate', { profileId, licenseData }),
+
+  deactivatePremium: (profileId) =>
+    ipcRenderer.invoke('premium:deactivate', profileId),
+
+  validatePremium: (profileId) =>
+    ipcRenderer.invoke('premium:validate', profileId),
 });

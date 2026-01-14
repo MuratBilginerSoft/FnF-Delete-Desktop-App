@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { DatabaseManager } = require('./Database.js');
 const { FileScanner } = require('./FileScanner.js');
+const { JobScheduler } = require('./JobScheduler.js');
 
 // Lazy load autoUpdater to avoid initialization issues
 let autoUpdater;
@@ -13,6 +14,7 @@ class Main {
     this.splashWindow = null;
     this.database = null;
     this.fileScanner = null;
+    this.jobScheduler = null;
   }
 
   initialize() {
@@ -30,11 +32,19 @@ class Main {
       // Setup auto updater
       this.setupAutoUpdater();
 
+      // Initialize job scheduler
+      this.jobScheduler = new JobScheduler(this.database, this.fileScanner, null);
+
       // Wait a bit, then create main window
       setTimeout(() => {
         this.createWindow();
         this.setupIpcHandlers();
         this.setupAppEvents();
+
+        // Set main window reference for job scheduler and start it
+        this.jobScheduler.setMainWindow(this.mainWindow);
+        this.jobScheduler.start();
+
         console.log('FnF Delete application initialized successfully');
       }, 3000); // 3 second delay for splash screen
 
@@ -119,6 +129,9 @@ class Main {
     });
 
     app.on('before-quit', () => {
+      if (this.jobScheduler) {
+        this.jobScheduler.stop();
+      }
       if (this.database) {
         this.database.close();
       }
@@ -693,6 +706,167 @@ $items | ConvertTo-Json -Depth 3 -Compress
         return { success: true, message: 'Recycle Bin emptied successfully', deletedCount: totalFiles, totalSize: totalSize };
       } catch (error) {
         console.error('Empty trash error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    // ============ DELETE JOBS HANDLERS ============
+
+    ipcMain.handle('job:create', async (event, { profileId, jobData }) => {
+      try {
+        // Calculate initial next run time
+        if (jobData.scheduleType && jobData.scheduleType !== 'manual' && jobData.scheduleType !== 'startup') {
+          jobData.nextRunAt = this.jobScheduler.calculateInitialNextRun(
+            jobData.scheduleType,
+            jobData.scheduleTime,
+            jobData.scheduleDay
+          );
+        }
+        jobData.isActive = jobData.isActive !== false;
+        return this.database.createJob(profileId, jobData);
+      } catch (error) {
+        console.error('Create job error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('job:getAll', async (event, profileId) => {
+      try {
+        return this.database.getAllJobs(profileId);
+      } catch (error) {
+        console.error('Get all jobs error:', error);
+        return [];
+      }
+    });
+
+    ipcMain.handle('job:get', async (event, jobId) => {
+      try {
+        return this.database.getJob(jobId);
+      } catch (error) {
+        console.error('Get job error:', error);
+        return null;
+      }
+    });
+
+    ipcMain.handle('job:update', async (event, { jobId, jobData }) => {
+      try {
+        // Recalculate next run time if schedule changed
+        if (jobData.scheduleType && jobData.scheduleType !== 'manual' && jobData.scheduleType !== 'startup') {
+          jobData.nextRunAt = this.jobScheduler.calculateInitialNextRun(
+            jobData.scheduleType,
+            jobData.scheduleTime,
+            jobData.scheduleDay
+          );
+        } else {
+          jobData.nextRunAt = null;
+        }
+        return this.database.updateJob(jobId, jobData);
+      } catch (error) {
+        console.error('Update job error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('job:delete', async (event, jobId) => {
+      try {
+        return this.database.deleteJob(jobId);
+      } catch (error) {
+        console.error('Delete job error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('job:toggleActive', async (event, { jobId, isActive }) => {
+      try {
+        return this.database.toggleJobActive(jobId, isActive);
+      } catch (error) {
+        console.error('Toggle job active error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('job:runNow', async (event, jobId) => {
+      try {
+        return await this.jobScheduler.runJobNow(jobId);
+      } catch (error) {
+        console.error('Run job now error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('job:getHistory', async (event, { jobId, limit }) => {
+      try {
+        return this.database.getJobExecutionHistory(jobId, limit || 20);
+      } catch (error) {
+        console.error('Get job history error:', error);
+        return [];
+      }
+    });
+
+    ipcMain.handle('job:getExecutionDetails', async (event, executionId) => {
+      try {
+        return this.database.getJobExecutionDetails(executionId);
+      } catch (error) {
+        console.error('Get execution details error:', error);
+        return { execution: null, files: [] };
+      }
+    });
+
+    ipcMain.handle('job:getCount', async (event, profileId) => {
+      try {
+        return this.database.getJobCount(profileId);
+      } catch (error) {
+        console.error('Get job count error:', error);
+        return 0;
+      }
+    });
+
+    // ============ PREMIUM LICENSE HANDLERS ============
+
+    ipcMain.handle('premium:getStatus', async (event, profileId) => {
+      try {
+        return this.database.getPremiumStatus(profileId);
+      } catch (error) {
+        console.error('Get premium status error:', error);
+        return {
+          isPremium: false,
+          licenseType: 'free',
+          features: {
+            unlimitedJobs: false,
+            allScheduleTypes: false,
+            permanentDeleteJobs: false,
+            unlimitedHistory: false
+          }
+        };
+      }
+    });
+
+    ipcMain.handle('premium:activate', async (event, { profileId, licenseData }) => {
+      try {
+        return this.database.activatePremium(profileId, licenseData);
+      } catch (error) {
+        console.error('Activate premium error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('premium:deactivate', async (event, profileId) => {
+      try {
+        return this.database.deactivatePremium(profileId);
+      } catch (error) {
+        console.error('Deactivate premium error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('premium:validate', async (event, profileId) => {
+      try {
+        // For now, just update validation timestamp
+        // In production, this would validate against a server
+        this.database.updatePremiumValidation(profileId);
+        return this.database.getPremiumStatus(profileId);
+      } catch (error) {
+        console.error('Validate premium error:', error);
         return { success: false, message: error.message };
       }
     });
