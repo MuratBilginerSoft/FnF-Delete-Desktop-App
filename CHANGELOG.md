@@ -5,6 +5,33 @@ All notable changes to FnF Delete will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-01-14
+
+### Added
+
+#### Database Backup & Restore System
+- Export all application data to JSON file for backup
+- Import data from backup file to restore on any PC
+- Backup includes: profiles, settings, saved paths, deletion history, statistics
+- Profile dropdown menu integration for quick access to backup features
+- Profile selection page backup buttons for immediate data import on app start
+- Custom confirmation modal for import operations (replacing native browser dialogs)
+- Data validation before import to ensure backup file integrity
+
+### Changed
+- Separated development and production databases (fnf-delete-dev.db vs fnf-delete.db)
+- Enhanced modal design for import confirmation with warning messages
+- Improved user experience with notification toasts for backup operations
+
+### Technical
+- Added `exportAllData()`, `validateBackupData()`, `importAllData()` methods to Database.js
+- Implemented `backup:export` and `backup:import` IPC handlers in main.js
+- Extended preload API with backup operations
+- Added backup-related translations for Turkish and English
+- Database now uses `app.isPackaged` to determine environment
+
+---
+
 ## [1.4.1] - 2025-12-12
 
 ### Fixed

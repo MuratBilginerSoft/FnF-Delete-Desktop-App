@@ -11,7 +11,11 @@ class DatabaseManager {
   initialize() {
     try {
       const userDataPath = app.getPath('userData');
-      const dbPath = path.join(userDataPath, 'fnf-delete.db');
+
+      // Use different database for development and production
+      const isDev = !app.isPackaged;
+      const dbName = isDev ? 'fnf-delete-dev.db' : 'fnf-delete.db';
+      const dbPath = path.join(userDataPath, dbName);
 
       // Ensure directory exists
       if (!fs.existsSync(userDataPath)) {
@@ -22,7 +26,7 @@ class DatabaseManager {
       this.db.pragma('journal_mode = WAL');
       this.createTables();
 
-      console.log('Database initialized at:', dbPath);
+      console.log(`Database initialized at: ${dbPath} (${isDev ? 'DEVELOPMENT' : 'PRODUCTION'})`);
       return true;
     } catch (error) {
       console.error('Database initialization error:', error);
@@ -525,6 +529,251 @@ class DatabaseManager {
     } catch (error) {
       console.error('Update profile settings error:', error);
       return { success: false, message: error.message };
+    }
+  }
+
+  // ============ BACKUP / RESTORE OPERATIONS ============
+
+  /**
+   * Export all database data to JSON format
+   */
+  exportAllData() {
+    try {
+      const profiles = this.db.prepare('SELECT * FROM profiles').all();
+      const profileSettings = this.db.prepare('SELECT * FROM profile_settings').all();
+      const savedPaths = this.db.prepare('SELECT * FROM saved_paths').all();
+      const deletionOperations = this.db.prepare('SELECT * FROM deletion_operations').all();
+      const deletedFiles = this.db.prepare('SELECT * FROM deleted_files').all();
+      const permanentDeletions = this.db.prepare('SELECT * FROM permanent_deletions').all();
+      const permanentlyDeletedFiles = this.db.prepare('SELECT * FROM permanently_deleted_files').all();
+
+      return {
+        version: '1.0',
+        appVersion: '1.4.2',
+        exportDate: new Date().toISOString(),
+        data: {
+          profiles,
+          profileSettings,
+          savedPaths,
+          deletionOperations,
+          deletedFiles,
+          permanentDeletions,
+          permanentlyDeletedFiles
+        }
+      };
+    } catch (error) {
+      console.error('Export data error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate backup data structure
+   */
+  validateBackupData(jsonData) {
+    try {
+      // Check version
+      if (!jsonData.version) {
+        return { valid: false, error: 'Missing version field' };
+      }
+
+      // Check data object
+      if (!jsonData.data) {
+        return { valid: false, error: 'Missing data field' };
+      }
+
+      // Check required tables
+      const requiredTables = [
+        'profiles',
+        'profileSettings',
+        'savedPaths',
+        'deletionOperations',
+        'deletedFiles',
+        'permanentDeletions',
+        'permanentlyDeletedFiles'
+      ];
+
+      for (const table of requiredTables) {
+        if (!Array.isArray(jsonData.data[table])) {
+          return { valid: false, error: `Missing or invalid table: ${table}` };
+        }
+      }
+
+      // Check profiles have required fields
+      for (const profile of jsonData.data.profiles) {
+        if (!profile.name) {
+          return { valid: false, error: 'Profile missing name field' };
+        }
+      }
+
+      return { valid: true };
+    } catch (error) {
+      return { valid: false, error: error.message };
+    }
+  }
+
+  /**
+   * Import data from JSON backup (replaces all existing data)
+   */
+  importAllData(jsonData) {
+    const transaction = this.db.transaction(() => {
+      // Clear all existing data (in reverse order of dependencies)
+      this.db.exec('DELETE FROM permanently_deleted_files');
+      this.db.exec('DELETE FROM permanent_deletions');
+      this.db.exec('DELETE FROM deleted_files');
+      this.db.exec('DELETE FROM deletion_operations');
+      this.db.exec('DELETE FROM saved_paths');
+      this.db.exec('DELETE FROM profile_settings');
+      this.db.exec('DELETE FROM profiles');
+
+      // Reset autoincrement counters
+      this.db.exec("DELETE FROM sqlite_sequence WHERE name IN ('profiles', 'profile_settings', 'saved_paths', 'deletion_operations', 'deleted_files', 'permanent_deletions', 'permanently_deleted_files')");
+
+      const data = jsonData.data;
+
+      // Create ID mapping for profiles (old ID -> new ID)
+      const profileIdMap = new Map();
+
+      // Import profiles
+      const insertProfile = this.db.prepare(`
+        INSERT INTO profiles (name, avatar_color, created_at, last_used_at)
+        VALUES (?, ?, ?, ?)
+      `);
+      for (const profile of data.profiles) {
+        const result = insertProfile.run(
+          profile.name,
+          profile.avatar_color || '#004C99',
+          profile.created_at || new Date().toISOString(),
+          profile.last_used_at || new Date().toISOString()
+        );
+        profileIdMap.set(profile.id, result.lastInsertRowid);
+      }
+
+      // Import profile settings
+      const insertSettings = this.db.prepare(`
+        INSERT INTO profile_settings (profile_id, include_subfolders)
+        VALUES (?, ?)
+      `);
+      for (const setting of data.profileSettings) {
+        const newProfileId = profileIdMap.get(setting.profile_id);
+        if (newProfileId) {
+          insertSettings.run(newProfileId, setting.include_subfolders ?? 1);
+        }
+      }
+
+      // Import saved paths
+      const insertSavedPath = this.db.prepare(`
+        INSERT INTO saved_paths (profile_id, path, name, created_at)
+        VALUES (?, ?, ?, ?)
+      `);
+      for (const savedPath of data.savedPaths) {
+        const newProfileId = profileIdMap.get(savedPath.profile_id);
+        if (newProfileId) {
+          insertSavedPath.run(
+            newProfileId,
+            savedPath.path,
+            savedPath.name,
+            savedPath.created_at || new Date().toISOString()
+          );
+        }
+      }
+
+      // Create ID mapping for deletion operations (old ID -> new ID)
+      const operationIdMap = new Map();
+
+      // Import deletion operations
+      const insertOperation = this.db.prepare(`
+        INSERT INTO deletion_operations (profile_id, operation_date, scan_path, deletion_mode, file_extensions, total_files_found, total_files_deleted, total_size_bytes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const op of data.deletionOperations) {
+        const newProfileId = profileIdMap.get(op.profile_id);
+        if (newProfileId) {
+          const result = insertOperation.run(
+            newProfileId,
+            op.operation_date,
+            op.scan_path,
+            op.deletion_mode,
+            op.file_extensions,
+            op.total_files_found || 0,
+            op.total_files_deleted || 0,
+            op.total_size_bytes || 0
+          );
+          operationIdMap.set(op.id, result.lastInsertRowid);
+        }
+      }
+
+      // Import deleted files
+      const insertDeletedFile = this.db.prepare(`
+        INSERT INTO deleted_files (operation_id, profile_id, file_path, file_name, file_extension, file_size_bytes, deleted_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const file of data.deletedFiles) {
+        const newProfileId = profileIdMap.get(file.profile_id);
+        const newOperationId = operationIdMap.get(file.operation_id);
+        if (newProfileId && newOperationId) {
+          insertDeletedFile.run(
+            newOperationId,
+            newProfileId,
+            file.file_path,
+            file.file_name,
+            file.file_extension,
+            file.file_size_bytes,
+            file.deleted_at
+          );
+        }
+      }
+
+      // Create ID mapping for permanent deletions (old ID -> new ID)
+      const permanentOpIdMap = new Map();
+
+      // Import permanent deletions
+      const insertPermanentOp = this.db.prepare(`
+        INSERT INTO permanent_deletions (profile_id, operation_date, total_files_deleted, total_size_bytes)
+        VALUES (?, ?, ?, ?)
+      `);
+      for (const op of data.permanentDeletions) {
+        const newProfileId = profileIdMap.get(op.profile_id);
+        if (newProfileId) {
+          const result = insertPermanentOp.run(
+            newProfileId,
+            op.operation_date,
+            op.total_files_deleted || 0,
+            op.total_size_bytes || 0
+          );
+          permanentOpIdMap.set(op.id, result.lastInsertRowid);
+        }
+      }
+
+      // Import permanently deleted files
+      const insertPermanentFile = this.db.prepare(`
+        INSERT INTO permanently_deleted_files (operation_id, profile_id, file_path, file_name, file_extension, file_size_bytes, original_path, deleted_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const file of data.permanentlyDeletedFiles) {
+        const newProfileId = profileIdMap.get(file.profile_id);
+        const newOperationId = permanentOpIdMap.get(file.operation_id);
+        if (newProfileId && newOperationId) {
+          insertPermanentFile.run(
+            newOperationId,
+            newProfileId,
+            file.file_path,
+            file.file_name,
+            file.file_extension,
+            file.file_size_bytes,
+            file.original_path,
+            file.deleted_at
+          );
+        }
+      }
+    });
+
+    try {
+      transaction();
+      return { success: true };
+    } catch (error) {
+      console.error('Import data error:', error);
+      throw error;
     }
   }
 

@@ -518,6 +518,101 @@ class Main {
       }
     });
 
+    // ============ BACKUP / RESTORE HANDLERS ============
+
+    ipcMain.handle('backup:export', async () => {
+      try {
+        const { dialog } = await import('electron');
+
+        // Generate default filename with date
+        const date = new Date().toISOString().slice(0, 10);
+        const defaultPath = `fnf-delete-backup-${date}.json`;
+
+        const result = await dialog.showSaveDialog(this.mainWindow, {
+          title: 'Export Database Backup',
+          defaultPath: defaultPath,
+          filters: [
+            { name: 'JSON Files', extensions: ['json'] },
+            { name: 'All Files', extensions: ['*'] }
+          ]
+        });
+
+        if (result.canceled || !result.filePath) {
+          return { success: false, canceled: true };
+        }
+
+        // Export all data from database
+        const data = this.database.exportAllData();
+
+        // Write to file
+        fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf8');
+
+        return {
+          success: true,
+          path: result.filePath,
+          stats: {
+            profiles: data.data.profiles.length,
+            operations: data.data.deletionOperations.length,
+            files: data.data.deletedFiles.length
+          }
+        };
+      } catch (error) {
+        console.error('Export backup error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    ipcMain.handle('backup:import', async () => {
+      try {
+        const { dialog } = await import('electron');
+
+        const result = await dialog.showOpenDialog(this.mainWindow, {
+          title: 'Import Database Backup',
+          filters: [
+            { name: 'JSON Files', extensions: ['json'] },
+            { name: 'All Files', extensions: ['*'] }
+          ],
+          properties: ['openFile']
+        });
+
+        if (result.canceled || result.filePaths.length === 0) {
+          return { success: false, canceled: true };
+        }
+
+        const filePath = result.filePaths[0];
+
+        // Read and parse the file
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        let jsonData;
+        try {
+          jsonData = JSON.parse(fileContent);
+        } catch (parseError) {
+          return { success: false, message: 'Invalid JSON file format' };
+        }
+
+        // Validate the backup data
+        const validation = this.database.validateBackupData(jsonData);
+        if (!validation.valid) {
+          return { success: false, message: validation.error };
+        }
+
+        // Import the data
+        this.database.importAllData(jsonData);
+
+        return {
+          success: true,
+          stats: {
+            profiles: jsonData.data.profiles.length,
+            operations: jsonData.data.deletionOperations.length,
+            files: jsonData.data.deletedFiles.length
+          }
+        };
+      } catch (error) {
+        console.error('Import backup error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
     // ============ RECYCLE BIN / TRASH HANDLERS ============
 
     ipcMain.handle('trash:getItems', async () => {

@@ -222,6 +222,14 @@ const translations = {
     'changelog.v1.3.autoupdate.progress': 'Gerçek zamanlı indirme ilerleme takibi',
     'changelog.v1.3.autoupdate.install': 'Tek tıkla yükle ve yeniden başlat',
 
+    // v1.4.2 Changelog
+    'changelog.v1.4.2.backup.export': 'Tüm verileri JSON dosyasına yedekleme özelliği',
+    'changelog.v1.4.2.backup.import': 'Yedek dosyasından veri geri yükleme',
+    'changelog.v1.4.2.backup.validation': 'Yedek dosyası doğrulama ve kontrol sistemi',
+    'changelog.v1.4.2.backup.ui': 'Profil menüsü ve profil seçim sayfasına yedekleme butonları',
+    'changelog.v1.4.2.improve.devdb': 'Geliştirme ve üretim ortamı için ayrı veritabanları',
+    'changelog.v1.4.2.improve.modal': 'Özel tasarımlı onay modalları',
+
     // v1.4.1 Changelog
     'changelog.v1.4.1.fix.releasenotes': 'Güncelleme notlarında HTML etiketlerinin görünme sorunu düzeltildi',
     'changelog.v1.4.1.fix.htmlparsing': 'GitHub release notları için HTML ayrıştırma iyileştirildi',
@@ -251,6 +259,20 @@ const translations = {
     'common.back': 'Geri',
     'common.no': 'Hayır',
     'common.about': 'Hakkında',
+
+    // Backup / Restore
+    'backup.title': 'Yedekleme',
+    'backup.export': 'Verileri Yedekle',
+    'backup.import': 'Yedekten Geri Yükle',
+    'backup.exportSuccess': 'Veriler başarıyla yedeklendi!',
+    'backup.exportSuccessMessage': '{profiles} profil, {operations} işlem ve {files} dosya kaydı yedeklendi.',
+    'backup.importSuccess': 'Veriler başarıyla geri yüklendi!',
+    'backup.importSuccessMessage': '{profiles} profil, {operations} işlem ve {files} dosya kaydı yüklendi.',
+    'backup.importConfirmTitle': 'Yedekten Geri Yükle',
+    'backup.importConfirmMessage': 'DİKKAT: Mevcut tüm veriler silinecek ve yedek dosyasındaki verilerle değiştirilecek. Bu işlem geri alınamaz!',
+    'backup.invalidFile': 'Geçersiz yedek dosyası',
+    'backup.error': 'Yedekleme hatası oluştu',
+    'backup.canceled': 'İşlem iptal edildi',
 
     // About page
     'about.subtitle': 'Dosya ve Klasör Silme Yöneticisi',
@@ -488,6 +510,14 @@ const translations = {
     'changelog.v1.3.autoupdate.progress': 'Real-time download progress tracking',
     'changelog.v1.3.autoupdate.install': 'One-click install and restart',
 
+    // v1.4.2 Changelog
+    'changelog.v1.4.2.backup.export': 'Export all data to JSON file for backup',
+    'changelog.v1.4.2.backup.import': 'Import and restore data from backup file',
+    'changelog.v1.4.2.backup.validation': 'Backup file validation and integrity check',
+    'changelog.v1.4.2.backup.ui': 'Backup buttons in profile menu and profile selection page',
+    'changelog.v1.4.2.improve.devdb': 'Separate databases for development and production',
+    'changelog.v1.4.2.improve.modal': 'Custom designed confirmation modals',
+
     // v1.4.1 Changelog
     'changelog.v1.4.1.fix.releasenotes': 'Fixed release notes displaying raw HTML tags',
     'changelog.v1.4.1.fix.htmlparsing': 'Improved HTML parsing for GitHub release notes',
@@ -517,6 +547,20 @@ const translations = {
     'common.no': 'No',
     'common.back': 'Back',
     'common.about': 'About',
+
+    // Backup / Restore
+    'backup.title': 'Backup',
+    'backup.export': 'Export Backup',
+    'backup.import': 'Import Backup',
+    'backup.exportSuccess': 'Data backed up successfully!',
+    'backup.exportSuccessMessage': '{profiles} profiles, {operations} operations and {files} file records backed up.',
+    'backup.importSuccess': 'Data restored successfully!',
+    'backup.importSuccessMessage': '{profiles} profiles, {operations} operations and {files} file records imported.',
+    'backup.importConfirmTitle': 'Import from Backup',
+    'backup.importConfirmMessage': 'WARNING: All existing data will be deleted and replaced with data from the backup file. This action cannot be undone!',
+    'backup.invalidFile': 'Invalid backup file',
+    'backup.error': 'Backup error occurred',
+    'backup.canceled': 'Operation canceled',
 
     // About page
     'about.subtitle': 'File & Folder Deletion Manager',

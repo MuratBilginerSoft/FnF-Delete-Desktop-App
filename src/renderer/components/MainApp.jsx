@@ -12,14 +12,78 @@ import './MainApp.css';
 export default function MainApp({ onLogout }) {
   const { t, language, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { currentProfile, clearProfile } = useProfileStore();
+  const { currentProfile, clearProfile, setProfiles } = useProfileStore();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     clearProfile();
     onLogout();
+  };
+
+  // Show notification helper
+  const showNotification = (type, title, message) => {
+    setNotification({ type, title, message });
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  // Handle export backup
+  const handleExportBackup = async () => {
+    setShowUserMenu(false);
+    try {
+      const result = await window.electronAPI.exportBackup();
+      if (result.success) {
+        const msg = t('backup.exportSuccessMessage')
+          .replace('{profiles}', result.stats.profiles)
+          .replace('{operations}', result.stats.operations)
+          .replace('{files}', result.stats.files);
+        showNotification('success', t('backup.exportSuccess'), msg);
+      } else if (!result.canceled) {
+        showNotification('error', t('backup.error'), result.message || t('backup.error'));
+      }
+    } catch (error) {
+      showNotification('error', t('backup.error'), error.message);
+    }
+  };
+
+  // Handle import backup - show modal
+  const handleImportBackup = () => {
+    setShowUserMenu(false);
+    setShowImportModal(true);
+  };
+
+  // Handle cancel import modal
+  const handleCancelImport = () => {
+    setShowImportModal(false);
+  };
+
+  // Handle confirm import
+  const handleConfirmImport = async () => {
+    setShowImportModal(false);
+
+    try {
+      const result = await window.electronAPI.importBackup();
+      if (result.success) {
+        const msg = t('backup.importSuccessMessage')
+          .replace('{profiles}', result.stats.profiles)
+          .replace('{operations}', result.stats.operations)
+          .replace('{files}', result.stats.files);
+        showNotification('success', t('backup.importSuccess'), msg);
+
+        // Refresh profiles list and logout to profile selection
+        const profiles = await window.electronAPI.getAllProfiles();
+        setProfiles(profiles);
+        clearProfile();
+        onLogout();
+      } else if (!result.canceled) {
+        showNotification('error', t('backup.error'), result.message || t('backup.invalidFile'));
+      }
+    } catch (error) {
+      showNotification('error', t('backup.error'), error.message);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -58,6 +122,57 @@ export default function MainApp({ onLogout }) {
 
   return (
     <div className="main-app">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`notification-toast ${notification.type}`}>
+          <div className="notification-content">
+            <div className="notification-icon">
+              {notification.type === 'success' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </div>
+            <div className="notification-text">
+              <strong>{notification.title}</strong>
+              <p>{notification.message}</p>
+            </div>
+            <button className="notification-close" onClick={() => setNotification(null)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Import Confirmation Modal */}
+      {showImportModal && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <div className="delete-modal-icon import-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </div>
+            <h3 className="delete-modal-title">{t('backup.import')}</h3>
+            <p className="delete-modal-message">{t('backup.importConfirmMessage')}</p>
+            <div className="delete-modal-actions">
+              <button className="delete-modal-btn delete-modal-btn-cancel" onClick={handleCancelImport}>
+                {t('common.cancel')}
+              </button>
+              <button className="delete-modal-btn delete-modal-btn-import" onClick={handleConfirmImport}>
+                {t('backup.import')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Animated background shapes */}
       <div className="app-bg-shape shape-1"></div>
       <div className="app-bg-shape shape-2"></div>
@@ -293,6 +408,42 @@ export default function MainApp({ onLogout }) {
                   </svg>
                   <span>{t('common.about')}</span>
                 </button>
+
+                <div className="dropdown-divider"></div>
+
+                {/* Export Backup */}
+                <button
+                  className="dropdown-item"
+                  onClick={handleExportBackup}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                    />
+                  </svg>
+                  <span>{t('backup.export')}</span>
+                </button>
+
+                {/* Import Backup */}
+                <button
+                  className="dropdown-item"
+                  onClick={handleImportBackup}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  <span>{t('backup.import')}</span>
+                </button>
+
+                <div className="dropdown-divider"></div>
 
                 {/* Change Profile */}
                 <button
