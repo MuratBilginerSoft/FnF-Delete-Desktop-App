@@ -113,4 +113,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   emptyTrash: (profileId, totalFiles, totalSize) =>
     ipcRenderer.invoke('trash:emptyAll', { profileId, totalFiles, totalSize }),
+
+  // Backup / Restore operations
+  exportBackup: () =>
+    ipcRenderer.invoke('backup:export'),
+
+  importBackup: () =>
+    ipcRenderer.invoke('backup:import'),
 });

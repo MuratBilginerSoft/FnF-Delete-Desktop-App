@@ -547,3 +547,235 @@
     height: 32px;
   }
 }
+
+/* ============================================ */
+/* NOTIFICATION TOAST */
+/* ============================================ */
+
+.notification-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification-toast .notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  min-width: 320px;
+  max-width: 450px;
+}
+
+.notification-toast.success .notification-content {
+  border-left: 4px solid #10B981;
+}
+
+.notification-toast.error .notification-content {
+  border-left: 4px solid #EF4444;
+}
+
+.notification-toast .notification-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-toast.success .notification-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+}
+
+.notification-toast.error .notification-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+.notification-toast .notification-text {
+  flex: 1;
+}
+
+.notification-toast .notification-text strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.notification-toast .notification-text p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notification-toast .notification-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.notification-toast .notification-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   IMPORT CONFIRMATION MODAL STYLES
+   ======================================== */
+
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.delete-modal {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow-2xl);
+  animation: slideInFromBottom 0.3s ease-out;
+  text-align: center;
+}
+
+.delete-modal-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 71, 87, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.delete-modal-icon svg {
+  width: 40px;
+  height: 40px;
+  color: #ff4757;
+}
+
+.delete-modal-icon.import-icon {
+  background: rgba(0, 102, 204, 0.15);
+}
+
+.delete-modal-icon.import-icon svg {
+  color: #0066CC;
+}
+
+.delete-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+}
+
+.delete-modal-message {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.delete-modal-btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.delete-modal-btn-cancel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+}
+
+.delete-modal-btn-cancel:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.delete-modal-btn-import {
+  background: linear-gradient(135deg, #0066CC, #0088FF);
+  color: #FFFFFF;
+}
+
+.delete-modal-btn-import:hover {
+  background: linear-gradient(135deg, #0055AA, #0077EE);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+}
+
+.delete-modal-btn-import:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

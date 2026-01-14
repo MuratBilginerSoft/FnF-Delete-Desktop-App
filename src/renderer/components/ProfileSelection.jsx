@@ -12,7 +12,70 @@ export default function ProfileSelection({ onProfileSelected }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [profileToDelete, setProfileToDelete] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showBackupMenu, setShowBackupMenu] = useState(false);
   const dropdownRef = useRef(null);
+  const backupMenuRef = useRef(null);
+
+  // Show notification helper
+  const showNotification = (type, title, message) => {
+    setNotification({ type, title, message });
+    setTimeout(() => setNotification(null), 5000);
+  };
+
+  // Handle export backup
+  const handleExportBackup = async () => {
+    setShowBackupMenu(false);
+    try {
+      const result = await window.electronAPI.exportBackup();
+      if (result.success) {
+        const msg = t('backup.exportSuccessMessage')
+          .replace('{profiles}', result.stats.profiles)
+          .replace('{operations}', result.stats.operations)
+          .replace('{files}', result.stats.files);
+        showNotification('success', t('backup.exportSuccess'), msg);
+      } else if (!result.canceled) {
+        showNotification('error', t('backup.error'), result.message || t('backup.error'));
+      }
+    } catch (error) {
+      showNotification('error', t('backup.error'), error.message);
+    }
+  };
+
+  // Handle import backup - show confirmation modal
+  const handleImportBackup = () => {
+    setShowBackupMenu(false);
+    setShowImportModal(true);
+  };
+
+  // Confirm import backup
+  const handleConfirmImport = async () => {
+    setShowImportModal(false);
+
+    try {
+      const result = await window.electronAPI.importBackup();
+      if (result.success) {
+        const msg = t('backup.importSuccessMessage')
+          .replace('{profiles}', result.stats.profiles)
+          .replace('{operations}', result.stats.operations)
+          .replace('{files}', result.stats.files);
+        showNotification('success', t('backup.importSuccess'), msg);
+
+        // Refresh profiles list
+        await loadProfiles();
+      } else if (!result.canceled) {
+        showNotification('error', t('backup.error'), result.message || t('backup.invalidFile'));
+      }
+    } catch (error) {
+      showNotification('error', t('backup.error'), error.message);
+    }
+  };
+
+  // Cancel import
+  const handleCancelImport = () => {
+    setShowImportModal(false);
+  };
 
   useEffect(() => {
     loadProfiles();
@@ -33,6 +96,23 @@ export default function ProfileSelection({ onProfileSelected }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [openMenuId]);
+
+  // Close backup menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (backupMenuRef.current && !backupMenuRef.current.contains(event.target)) {
+        setShowBackupMenu(false);
+      }
+    };
+
+    if (showBackupMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showBackupMenu]);
 
   const loadProfiles = async () => {
     try {
@@ -129,6 +209,34 @@ export default function ProfileSelection({ onProfileSelected }) {
 
   return (
     <div className="profile-selection">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`profile-notification-toast ${notification.type}`}>
+          <div className="notification-content">
+            <div className="notification-icon">
+              {notification.type === 'success' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </div>
+            <div className="notification-text">
+              <strong>{notification.title}</strong>
+              <p>{notification.message}</p>
+            </div>
+            <button className="notification-close" onClick={() => setNotification(null)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Window Controls */}
       <div className="profile-window-controls">
         <button
@@ -287,6 +395,57 @@ export default function ProfileSelection({ onProfileSelected }) {
         )}
       </div>
 
+      {/* Floating Backup Menu - Bottom Right */}
+      <div className="backup-floating-container" ref={backupMenuRef}>
+        <button
+          className="backup-floating-btn"
+          onClick={() => setShowBackupMenu(!showBackupMenu)}
+          title={t('backup.title')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 4v4h8V4M8 16h8M12 12v4"
+            />
+          </svg>
+        </button>
+
+        {showBackupMenu && (
+          <div className="backup-floating-menu">
+            <button className="backup-menu-item" onClick={handleExportBackup}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                />
+              </svg>
+              <span>{t('backup.export')}</span>
+            </button>
+            <button className="backup-menu-item" onClick={handleImportBackup}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              <span>{t('backup.import')}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && profileToDelete && (
         <div className="delete-modal-overlay" onClick={handleCancelDelete}>
@@ -360,6 +519,75 @@ export default function ProfileSelection({ onProfileSelected }) {
                   />
                 </svg>
                 {t('profile.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Backup Confirmation Modal */}
+      {showImportModal && (
+        <div className="delete-modal-overlay" onClick={handleCancelImport}>
+          <div className="delete-modal import-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-modal-header">
+              <div className="delete-modal-icon import-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+              </div>
+              <h2 className="delete-modal-title">{t('backup.importConfirmTitle')}</h2>
+            </div>
+
+            <div className="delete-modal-content">
+              <p className="delete-modal-message">
+                {t('backup.importConfirmMessage')}
+              </p>
+
+              <div className="delete-modal-warning">
+                <svg
+                  className="delete-modal-warning-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <p className="delete-modal-warning-text">
+                  {t('profile.deleteWarning')}
+                </p>
+              </div>
+            </div>
+
+            <div className="delete-modal-actions">
+              <button
+                className="delete-modal-btn delete-modal-btn-cancel"
+                onClick={handleCancelImport}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                className="delete-modal-btn delete-modal-btn-import"
+                onClick={handleConfirmImport}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                {t('backup.import')}
               </button>
             </div>
           </div>

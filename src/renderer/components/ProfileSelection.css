@@ -630,6 +630,161 @@
   height: 18px;
 }
 
+/* Import Modal Styles */
+.import-modal .import-icon {
+  background: rgba(0, 102, 204, 0.15);
+}
+
+.import-modal .import-icon svg {
+  color: #0066CC;
+}
+
+.delete-modal-btn-import {
+  background: linear-gradient(135deg, #0066CC, #0088FF);
+  color: #FFFFFF;
+}
+
+.delete-modal-btn-import:hover {
+  background: linear-gradient(135deg, #0055AA, #0077EE);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+}
+
+.delete-modal-btn-import:active {
+  transform: translateY(0);
+}
+
+/* Backup/Restore Buttons */
+.profile-backup-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.backup-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backup-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+}
+
+.backup-btn svg {
+  flex-shrink: 0;
+}
+
+/* Notification Toast */
+.profile-notification-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.profile-notification-toast .notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  min-width: 320px;
+  max-width: 450px;
+}
+
+.profile-notification-toast.success .notification-content {
+  border-left: 4px solid #10B981;
+}
+
+.profile-notification-toast.error .notification-content {
+  border-left: 4px solid #EF4444;
+}
+
+.profile-notification-toast .notification-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-notification-toast.success .notification-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+}
+
+.profile-notification-toast.error .notification-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+.profile-notification-toast .notification-text {
+  flex: 1;
+}
+
+.profile-notification-toast .notification-text strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.profile-notification-toast .notification-text p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.profile-notification-toast .notification-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.profile-notification-toast .notification-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Animations */
 @keyframes rotate360 {
   from { transform: rotate(0deg); }
@@ -640,6 +795,95 @@
   from {
     opacity: 0;
     transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating Backup Menu - Bottom Right */
+.backup-floating-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  -webkit-app-region: no-drag;
+}
+
+.backup-floating-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0066CC, #0088FF);
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+
+.backup-floating-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(0, 102, 204, 0.5);
+}
+
+.backup-floating-btn:active {
+  transform: scale(0.95);
+}
+
+.backup-floating-menu {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
+  min-width: 180px;
+  padding: 8px;
+  animation: slideInFromBottom 0.2s ease-out;
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+.backup-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+
+.backup-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.backup-menu-item svg {
+  flex-shrink: 0;
+  color: var(--accent-blue);
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
