@@ -346,6 +346,73 @@ class Main {
       }
     });
 
+    // ============ FOLDER SCANNING HANDLERS ============
+
+    ipcMain.handle('folders:scan', async (event, { scanPath, keywords, mode, includeSubfolders }) => {
+      try {
+        const result = await this.fileScanner.scanFolders(scanPath, keywords, mode, includeSubfolders);
+        return result;
+      } catch (error) {
+        console.error('Scan folders error:', error);
+        return { success: false, message: error.message, folders: [] };
+      }
+    });
+
+    ipcMain.handle('folders:moveToTrash', async (event, { folderPaths }) => {
+      try {
+        const results = [];
+        for (const folderPath of folderPaths) {
+          try {
+            await shell.trashItem(folderPath);
+            results.push({ path: folderPath, success: true });
+          } catch (err) {
+            results.push({ path: folderPath, success: false, error: err.message });
+          }
+        }
+        return { success: true, results };
+      } catch (error) {
+        console.error('Move folders to trash error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
+    // ============ FOLDER DELETION OPERATIONS HANDLER ============
+
+    ipcMain.handle('folderOperation:create', async (event, { profileId, scanPath, deletionMode, keywords, foldersData }) => {
+      try {
+        const operationId = this.database.createFolderDeletionOperation(
+          profileId,
+          scanPath,
+          deletionMode,
+          keywords
+        );
+
+        let totalSize = 0;
+        for (const folder of foldersData) {
+          this.database.addDeletedFolder(
+            operationId,
+            profileId,
+            folder.path,
+            folder.name,
+            folder.size
+          );
+          totalSize += folder.size;
+        }
+
+        this.database.updateDeletionOperation(
+          operationId,
+          foldersData.length,
+          foldersData.length,
+          totalSize
+        );
+
+        return { success: true, operationId };
+      } catch (error) {
+        console.error('Create folder operation error:', error);
+        return { success: false, message: error.message };
+      }
+    });
+
     // ============ DELETION OPERATIONS HANDLERS ============
 
     ipcMain.handle('operation:create', async (event, { profileId, scanPath, deletionMode, fileExtensions, filesData }) => {

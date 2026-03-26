@@ -6,6 +6,39 @@ export default function Changelog() {
 
   const changelogData = [
     {
+      version: '1.5.0',
+      date: '2026-03-26',
+      type: 'minor',
+      changes: [
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.5.folder.page',
+            'changelog.v1.5.folder.scan',
+            'changelog.v1.5.folder.keywords',
+            'changelog.v1.5.folder.categories',
+            'changelog.v1.5.folder.depth',
+          ]
+        },
+        {
+          category: 'feature',
+          items: [
+            'changelog.v1.5.folder.bookmark',
+            'changelog.v1.5.folder.selection',
+            'changelog.v1.5.folder.trash',
+          ]
+        },
+        {
+          category: 'improvement',
+          items: [
+            'changelog.v1.5.ui.dashboard',
+            'changelog.v1.5.ui.nav',
+            'changelog.v1.5.db.schema',
+          ]
+        }
+      ]
+    },
+    {
       version: '1.4.2',
       date: '2026-01-14',
       type: 'patch',

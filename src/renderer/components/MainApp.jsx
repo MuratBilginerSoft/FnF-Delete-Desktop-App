@@ -4,6 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import useProfileStore from '../store/useProfileStore';
 import Dashboard from './Dashboard';
 import FileDeletion from './FileDeletion';
+import FolderDeletion from './FolderDeletion';
 import Statistics from './Statistics';
 import Changelog from './Changelog';
 import About from './About';
@@ -109,6 +110,8 @@ export default function MainApp({ onLogout }) {
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'delete':
         return <FileDeletion />;
+      case 'deleteFolder':
+        return <FolderDeletion />;
       case 'statistics':
         return <Statistics />;
       case 'changelog':
@@ -266,6 +269,27 @@ export default function MainApp({ onLogout }) {
               />
             </svg>
             {t('nav.delete')}
+          </button>
+
+          <button
+            className={`nav-item ${currentPage === 'deleteFolder' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('deleteFolder')}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 14l2 2 4-4"
+              />
+            </svg>
+            {t('nav.deleteFolder')}
           </button>
 
           <button

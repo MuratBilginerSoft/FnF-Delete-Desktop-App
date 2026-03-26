@@ -129,6 +129,20 @@ class DatabaseManager {
       )
     `);
 
+    // Migration: Add operation_type column to deletion_operations
+    try {
+      this.db.exec(`ALTER TABLE deletion_operations ADD COLUMN operation_type TEXT DEFAULT 'file'`);
+    } catch (e) {
+      // Column already exists, ignore
+    }
+
+    // Migration: Add item_type column to deleted_files
+    try {
+      this.db.exec(`ALTER TABLE deleted_files ADD COLUMN item_type TEXT DEFAULT 'file'`);
+    } catch (e) {
+      // Column already exists, ignore
+    }
+
     // Create indexes for better performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_profiles_name ON profiles(name);
@@ -264,6 +278,27 @@ class DatabaseManager {
       VALUES (?, ?, ?, ?, ?, ?)
     `);
     stmt.run(operationId, profileId, filePath, fileName, fileExtension, fileSizeBytes);
+  }
+
+  // ============ FOLDER DELETION OPERATIONS ============
+
+  createFolderDeletionOperation(profileId, scanPath, deletionMode, keywords) {
+    const stmt = this.db.prepare(`
+      INSERT INTO deletion_operations
+      (profile_id, scan_path, deletion_mode, file_extensions, operation_type)
+      VALUES (?, ?, ?, ?, 'folder')
+    `);
+    const result = stmt.run(profileId, scanPath, deletionMode, keywords);
+    return result.lastInsertRowid;
+  }
+
+  addDeletedFolder(operationId, profileId, folderPath, folderName, folderSizeBytes) {
+    const stmt = this.db.prepare(`
+      INSERT INTO deleted_files
+      (operation_id, profile_id, file_path, file_name, file_extension, file_size_bytes, item_type)
+      VALUES (?, ?, ?, ?, '', ?, 'folder')
+    `);
+    stmt.run(operationId, profileId, folderPath, folderName, folderSizeBytes);
   }
 
   // ============ PERMANENT DELETION OPERATIONS ============

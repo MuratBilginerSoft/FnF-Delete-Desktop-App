@@ -45,6 +45,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openWithDefault: (filePath) =>
     ipcRenderer.invoke('files:openWithDefault', filePath),
 
+  // Folder operations
+  scanFolders: (scanPath, keywords, mode, includeSubfolders) =>
+    ipcRenderer.invoke('folders:scan', { scanPath, keywords, mode, includeSubfolders }),
+
+  moveFoldersToTrash: (folderPaths) =>
+    ipcRenderer.invoke('folders:moveToTrash', { folderPaths }),
+
+  createFolderOperation: (profileId, scanPath, deletionMode, keywords, foldersData) =>
+    ipcRenderer.invoke('folderOperation:create', { profileId, scanPath, deletionMode, keywords, foldersData }),
+
   // Deletion operations
   createOperation: (profileId, scanPath, deletionMode, fileExtensions, filesData) =>
     ipcRenderer.invoke('operation:create', { profileId, scanPath, deletionMode, fileExtensions, filesData }),
