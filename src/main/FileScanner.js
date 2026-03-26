@@ -172,6 +172,180 @@ class FileScanner {
     return false;
   }
 
+  // ============ FOLDER SCANNING ============
+
+  async scanFolders(scanPath, keywords, mode, includeSubfolders = false) {
+    try {
+      this.cancelScan = false;
+
+      if (!fs.existsSync(scanPath)) {
+        return { success: false, message: 'Path does not exist', folders: [] };
+      }
+
+      const stats = fs.statSync(scanPath);
+      if (!stats.isDirectory()) {
+        return { success: false, message: 'Path is not a directory', folders: [] };
+      }
+
+      let keywordList = [];
+      if (mode !== 'all') {
+        keywordList = keywords
+          .split(',')
+          .map(k => k.trim().toLowerCase())
+          .filter(k => k.length > 0);
+
+        if (keywordList.length === 0) {
+          return { success: false, message: 'No valid keywords provided', folders: [] };
+        }
+      }
+
+      const folders = [];
+      if (includeSubfolders) {
+        await this.scanFoldersRecursive(scanPath, keywordList, mode, folders);
+      } else {
+        await this.scanFoldersShallow(scanPath, keywordList, mode, folders);
+      }
+
+      return {
+        success: true,
+        folders,
+        totalSize: folders.reduce((sum, f) => sum + f.size, 0),
+        totalCount: folders.length
+      };
+    } catch (error) {
+      console.error('Scan folders error:', error);
+      return { success: false, message: error.message, folders: [] };
+    }
+  }
+
+  async scanFoldersShallow(dirPath, keywordList, mode, foundFolders) {
+    if (this.cancelScan) return;
+
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (this.cancelScan) break;
+
+        const fullPath = path.join(dirPath, entry.name);
+
+        try {
+          if (entry.isDirectory()) {
+            const shouldInclude = this.shouldIncludeFolder(entry.name, keywordList, mode);
+
+            if (shouldInclude) {
+              const folderInfo = this.getFolderInfo(fullPath, entry.name, dirPath);
+              foundFolders.push(folderInfo);
+            }
+          }
+        } catch (err) {
+          console.warn(`Cannot access: ${fullPath}`, err.message);
+        }
+      }
+    } catch (error) {
+      console.warn(`Cannot read directory: ${dirPath}`, error.message);
+    }
+  }
+
+  async scanFoldersRecursive(dirPath, keywordList, mode, foundFolders) {
+    if (this.cancelScan) return;
+
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (this.cancelScan) break;
+
+        const fullPath = path.join(dirPath, entry.name);
+
+        try {
+          if (entry.isDirectory()) {
+            const shouldInclude = this.shouldIncludeFolder(entry.name, keywordList, mode);
+
+            if (shouldInclude) {
+              const folderInfo = this.getFolderInfo(fullPath, entry.name, dirPath);
+              foundFolders.push(folderInfo);
+            }
+
+            // Always recurse to find more matches deeper
+            await this.scanFoldersRecursive(fullPath, keywordList, mode, foundFolders);
+          }
+        } catch (err) {
+          console.warn(`Cannot access: ${fullPath}`, err.message);
+        }
+      }
+    } catch (error) {
+      console.warn(`Cannot read directory: ${dirPath}`, error.message);
+    }
+  }
+
+  shouldIncludeFolder(folderName, keywordList, mode) {
+    if (mode === 'all') return true;
+
+    const lowerName = folderName.toLowerCase();
+    const isMatch = keywordList.some(keyword => lowerName.includes(keyword));
+
+    if (mode === 'include') return isMatch;
+    if (mode === 'exclude') return !isMatch;
+
+    return false;
+  }
+
+  getFolderInfo(fullPath, name, parentDir) {
+    try {
+      const stats = fs.statSync(fullPath);
+      const { fileCount, totalSize } = this.calculateFolderStats(fullPath);
+
+      return {
+        path: fullPath,
+        name: name,
+        size: totalSize,
+        fileCount: fileCount,
+        directory: parentDir,
+        modifiedAt: stats.mtime
+      };
+    } catch (error) {
+      return {
+        path: fullPath,
+        name: name,
+        size: 0,
+        fileCount: 0,
+        directory: parentDir,
+        modifiedAt: new Date()
+      };
+    }
+  }
+
+  calculateFolderStats(folderPath) {
+    let fileCount = 0;
+    let totalSize = 0;
+
+    try {
+      const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const entryPath = path.join(folderPath, entry.name);
+        try {
+          if (entry.isFile()) {
+            const stats = fs.statSync(entryPath);
+            fileCount++;
+            totalSize += stats.size;
+          } else if (entry.isDirectory()) {
+            const subStats = this.calculateFolderStats(entryPath);
+            fileCount += subStats.fileCount;
+            totalSize += subStats.totalSize;
+          }
+        } catch (err) {
+          // Skip inaccessible entries
+        }
+      }
+    } catch (error) {
+      // Skip inaccessible directories
+    }
+
+    return { fileCount, totalSize };
+  }
+
   cancel() {
     this.cancelScan = true;
   }
