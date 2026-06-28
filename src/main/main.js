@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { DatabaseManager } = require('./Database.js');
@@ -105,7 +105,69 @@ class Main {
     });
   }
 
+  setupAppMenu() {
+    // Custom in-window title bar → no native menu on Windows/Linux. macOS always
+    // shows a top menu bar and needs one for the standard editing/quit shortcuts
+    // (Cmd+C/V/X/A, Cmd+Q, Cmd+W).
+    if (process.platform !== 'darwin') {
+      Menu.setApplicationMenu(null);
+      return;
+    }
+
+    const template = [
+      {
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' },
+        ],
+      },
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
+        ],
+      },
+      {
+        label: 'View',
+        submenu: [
+          { role: 'reload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' },
+        ],
+      },
+      {
+        label: 'Window',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { role: 'close' },
+        ],
+      },
+    ];
+
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  }
+
   setupAppEvents() {
+    this.setupAppMenu();
+
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
         app.quit();
@@ -683,6 +745,10 @@ class Main {
     // ============ RECYCLE BIN / TRASH HANDLERS ============
 
     ipcMain.handle('trash:getItems', async () => {
+      // macOS has no Recycle Bin COM API; enumerate the user Trash directly.
+      if (process.platform === 'darwin') {
+        return this._getMacTrashItems();
+      }
       try {
         const { exec } = require('child_process');
         const util = require('util');
@@ -836,21 +902,24 @@ $items | ConvertTo-Json -Depth 3 -Compress
 
     ipcMain.handle('trash:emptyAll', async (event, { profileId, totalFiles, totalSize }) => {
       try {
-        const { exec } = require('child_process');
-        const util = require('util');
-        const execPromise = util.promisify(exec);
-
         // Record statistics before emptying if profileId is provided
         if (profileId && this.database && totalFiles > 0) {
           const operationId = this.database.createPermanentDeletionOperation(profileId);
           this.database.updatePermanentDeletionOperation(operationId, totalFiles, totalSize);
         }
 
-        // PowerShell command to empty Recycle Bin
-        await execPromise(
-          'powershell -NoProfile -ExecutionPolicy Bypass -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"',
-          { timeout: 60000 }
-        );
+        if (process.platform === 'darwin') {
+          this._emptyMacTrash();
+        } else {
+          const { exec } = require('child_process');
+          const util = require('util');
+          const execPromise = util.promisify(exec);
+          // PowerShell command to empty Recycle Bin
+          await execPromise(
+            'powershell -NoProfile -ExecutionPolicy Bypass -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"',
+            { timeout: 60000 }
+          );
+        }
 
         return { success: true, message: 'Recycle Bin emptied successfully', deletedCount: totalFiles, totalSize: totalSize };
       } catch (error) {
@@ -858,6 +927,85 @@ $items | ConvertTo-Json -Depth 3 -Compress
         return { success: false, message: error.message };
       }
     });
+  }
+
+  // ============ macOS Trash helpers ============
+  // macOS exposes the user Trash as ~/.Trash. We enumerate / empty it with plain
+  // fs (no PowerShell/COM). The original location of a trashed item is not
+  // readily available on macOS, so originalPath is left blank.
+
+  _macTrashDir() {
+    return path.join(require('os').homedir(), '.Trash');
+  }
+
+  _dirSize(dir) {
+    let total = 0;
+    let entries = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return 0; }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      try {
+        if (entry.isDirectory()) {
+          total += this._dirSize(full);
+        } else {
+          total += fs.statSync(full).size;
+        }
+      } catch (e) { /* skip unreadable */ }
+    }
+    return total;
+  }
+
+  _getMacTrashItems() {
+    try {
+      const trashDir = this._macTrashDir();
+      let entries = [];
+      try { entries = fs.readdirSync(trashDir, { withFileTypes: true }); } catch (e) { entries = []; }
+
+      let totalSize = 0;
+      const files = [];
+      for (const entry of entries) {
+        if (entry.name === '.DS_Store') continue;
+        const fullPath = path.join(trashDir, entry.name);
+        let stat;
+        try { stat = fs.statSync(fullPath); } catch (e) { continue; }
+
+        const isDir = stat.isDirectory();
+        const size = isDir ? this._dirSize(fullPath) : stat.size;
+        totalSize += size;
+
+        const nameParts = entry.name.split('.');
+        const extension = (!isDir && nameParts.length > 1) ? nameParts.pop().toLowerCase() : '';
+
+        files.push({
+          name: entry.name,
+          path: fullPath,
+          size,
+          extension,
+          type: isDir ? 'Folder' : (extension ? `${extension.toUpperCase()} File` : 'File'),
+          // ctime tracks the move-to-Trash time more closely than mtime.
+          dateDeleted: stat.ctime ? stat.ctime.toISOString() : null,
+          originalPath: ''
+        });
+      }
+
+      return { success: true, files, totalSize };
+    } catch (error) {
+      console.error('Get mac trash items error:', error);
+      return { success: false, message: error.message, files: [], totalSize: 0 };
+    }
+  }
+
+  _emptyMacTrash() {
+    const trashDir = this._macTrashDir();
+    let entries = [];
+    try { entries = fs.readdirSync(trashDir, { withFileTypes: true }); } catch (e) { return; }
+    for (const entry of entries) {
+      if (entry.name === '.DS_Store') continue;
+      const full = path.join(trashDir, entry.name);
+      try {
+        fs.rmSync(full, { recursive: true, force: true });
+      } catch (e) { /* skip locked/unreadable items */ }
+    }
   }
 }
 
